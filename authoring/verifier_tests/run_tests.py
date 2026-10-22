@@ -110,7 +110,7 @@ bash /tests/test.sh >/dev/null 2>&1; echo "EXIT=$?"
 for f in reward.txt reward.json details.json evidence.json; do test -s /logs/verifier/$f || echo "MISSING $f"; done
 echo "REWARD=$(cat /logs/verifier/reward.json)"
 python3 -c 'import json;print("DETAILS="+json.dumps(json.load(open("/logs/verifier/details.json"))["additional_data"]))'
-python3 -c 'import json;e=json.load(open("/logs/verifier/evidence.json"));print("EVID="+json.dumps({{"maxrss":e.get("verifier_maxrss_kb"),"displaced":e.get("displaced_cargo_config"),"results":[(r["id"],r["pass"],r["detail"][:60],r["secs"]) for r in e["results"]]}}))'
+python3 -c 'import json;e=json.load(open("/logs/verifier/evidence.json"));print("EVID="+json.dumps({{"maxrss":e.get("verifier_maxrss_kb"),"displaced":e.get("displaced_cargo_config"),"results":[(r["id"],r["pass"],r["detail"][:60],r["secs"]) for r in e["results"]],"enc":[(r["id"],r["ok"],r["detail"][:60],r["secs"]) for r in e.get("enc_results",[])]}}))'
 {after}
 """
     p = subprocess.run(["docker", "run", "--rm", "--cap-add", "MKNOD",
@@ -159,6 +159,14 @@ python3 -c 'import json;e=json.load(open("/logs/verifier/evidence.json"));print(
                 wrong.append(f"{cid} failed: {detail}")
             if secs > 15:
                 wrong.append(f"{cid} took {secs}s")
+        for cid, ok, detail, secs in evid.get("enc", []):
+            n = int(cid)
+            if n % 40 in {0, 5, 10, 20} and ok:
+                wrong.append(f"encoder {cid} accepted hostile output")
+            if n % 40 not in {0, 5, 10, 20} and not ok:
+                wrong.append(f"encoder {cid} failed: {detail}")
+            if secs > 15:
+                wrong.append(f"encoder {cid} took {secs}s")
         if wrong:
             problems.append(f"{len(wrong)} unexpected case outcomes: {wrong[:5]}")
         if not (0 < reward["reward"] < 1):

@@ -1,0 +1,160 @@
+urn ERR_isError(code); }
+
+/*! ZSTD_getErrorName() :
+ *  provides error code string from function result (useful for debugging) */
+const char* ZSTD_getErrorName(size_t code) { return ERR_getErrorName(code); }
+
+/*! ZSTD_getError() :
+ *  convert a `size_t` function result into a proper ZSTD_errorCode enum */
+ZSTD_ErrorCode ZSTD_getErrorCode(size_t code) { return ERR_getErrorCode(code); }
+
+/*! ZSTD_getErrorString() :
+ *  provides error code string from enum */
+const char* ZSTD_getErrorString(ZSTD_ErrorCode code) { return ERR_getErrorString(code); }
+/*
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ * All rights reserved.
+ *
+ * This source code is licensed under both the BSD-style license (found in the
+ * LICENSE file in the root directory of this source tree) and the GPLv2 (found
+ * in the COPYING file in the root directory of this source tree).
+ * You may select, at your option, one of the above-listed licenses.
+ */
+
+
+#ifndef ZSTD_DDICT_H
+#define ZSTD_DDICT_H
+
+/*-*******************************************************
+ *  Dependencies
+ *********************************************************/
+#include "../common/zstd_deps.h"   /* size_t */
+#include "../zstd.h"     /* ZSTD_DDict, and several public functions */
+
+
+/*-*******************************************************
+ *  Interface
+ *********************************************************/
+
+/* note: several prototypes are already published in `zstd.h` :
+ * ZSTD_createDDict()
+ * ZSTD_createDDict_byReference()
+ * ZSTD_createDDict_advanced()
+ * ZSTD_freeDDict()
+ * ZSTD_initStaticDDict()
+ * ZSTD_sizeof_DDict()
+ * ZSTD_estimateDDictSize()
+ * ZSTD_getDictID_fromDict()
+ */
+
+const void* ZSTD_DDict_dictContent(const ZSTD_DDict* ddict);
+size_t ZSTD_DDict_dictSize(const ZSTD_DDict* ddict);
+
+void ZSTD_copyDDictParameters(ZSTD_DCtx* dctx, const ZSTD_DDict* ddict);
+
+
+
+#endif /* ZSTD_DDICT_H */
+/*
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ * All rights reserved.
+ *
+ * This source code is licensed under both the BSD-style license (found in the
+ * LICENSE file in the root directory of this source tree) and the GPLv2 (found
+ * in the COPYING file in the root directory of this source tree).
+ * You may select, at your option, one of the above-listed licenses.
+ */
+
+
+
+/* *************************************
+*  Includes
+***************************************/
+#include <stdlib.h>      /* malloc, free */
+#include <string.h>      /* memset */
+#include <assert.h>      /* assert */
+
+#include "timefn.h"        /* UTIL_time_t, UTIL_getTime */
+#include "benchfn.h"
+
+
+/* *************************************
+*  Constants
+***************************************/
+#define TIMELOOP_MICROSEC     SEC_TO_MICRO      /* 1 second */
+#define TIMELOOP_NANOSEC      (1*1000000000ULL) /* 1 second */
+
+#define KB *(1 <<10)
+#define MB *(1 <<20)
+#define GB *(1U<<30)
+
+
+/* *************************************
+*  Debug errors
+***************************************/
+#if defined(DEBUG) && (DEBUG >= 1)
+#  include <stdio.h>       /* fprintf */
+#  define DISPLAY(...)       fprintf(stderr, __VA_ARGS__)
+#  define DEBUGOUTPUT(...) { if (DEBUG) DISPLAY(__VA_ARGS__); }
+#else
+#  define DEBUGOUTPUT(...)
+#endif
+
+
+/* error without displaying */
+#define RETURN_QUIET_ERROR(retValue, ...) {           \
+    DEBUGOUTPUT("%s: %i: \n", __FILE__, __LINE__);    \
+    DEBUGOUTPUT("Error : ");                          \
+    DEBUGOUTPUT(__VA_ARGS__);                         \
+    DEBUGOUTPUT(" \n");                               \
+    return retValue;                                  \
+}
+
+/* Abort execution if a condition is not met */
+#define CONTROL(c) { if (!(c)) { DEBUGOUTPUT("error: %s \n", #c); abort(); } }
+
+
+/* *************************************
+*  Benchmarking an arbitrary function
+***************************************/
+
+int BMK_isSuccessful_runOutcome(BMK_runOutcome_t outcome)
+{
+    return outcome.error_tag_never_ever_use_directly == 0;
+}
+
+/* warning : this function will stop program execution if outcome is invalid !
+ *           check outcome validity first, using BMK_isValid_runResult() */
+BMK_runTime_t BMK_extract_runTime(BMK_runOutcome_t outcome)
+{
+    CONTROL(outcome.error_tag_never_ever_use_directly == 0);
+    return outcome.internal_never_ever_use_directly;
+}
+
+size_t BMK_extract_errorResult(BMK_runOutcome_t outcome)
+{
+    CONTROL(outcome.error_tag_never_ever_use_directly != 0);
+    return outcome.error_result_never_ever_use_directly;
+}
+
+static BMK_runOutcome_t BMK_runOutcome_error(size_t errorResult)
+{
+    BMK_runOutcome_t b;
+    memset(&b, 0, sizeof(b));
+    b.error_tag_never_ever_use_directly = 1;
+    b.error_result_never_ever_use_directly = errorResult;
+    return b;
+}
+
+static BMK_runOutcome_t BMK_setValid_runTime(BMK_runTime_t runTime)
+{
+    BMK_runOutcome_t outcome;
+    outcome.error_tag_never_ever_use_directly = 0;
+    outcome.internal_never_ever_use_directly = runTime;
+    return outcome;
+}
+
+
+/* initFn will be measured once, benchFn will be measured `nbLoops` times */
+/* initFn is optional, provide NULL if none */
+/* benchF

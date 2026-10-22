@@ -1,17 +1,23 @@
 #!/usr/bin/env python3
 """Local self-check for /app/zstdr.
 
-Builds the decoder the same way grading does (clean environment, offline,
-fresh cargo home, release profile), applies the same source and linkage
-gates, decodes every case under /app/samples and prints per-category pass
-rates plus the score the published formula gives on these samples.
+Builds zstdr the same way grading does (clean environment, offline, fresh
+cargo home, release profile), applies the same source and linkage gates,
+decodes every case under /app/samples, compresses every input under
+/app/samples/encode, and prints per-category results plus the score the
+published formula gives on these samples.
+
+Encoder output is checked here with your own decoder; grading checks it with
+an independent strict decoder.
 
     python3 /app/selfcheck.py            # summary
     python3 /app/selfcheck.py -v         # also list every failing case
     python3 /app/selfcheck.py -k dict    # only categories containing "dict"
+    python3 /app/selfcheck.py --encode   # only the encoder samples
 """
 import hashlib
 import json
+import math
 import os
 import shutil
 import stat
@@ -32,6 +38,7 @@ FORBIDDEN_IMPORTS = {
 CLEAN_PATH = "/usr/local/cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 SUCCESS_CATEGORIES = ["levels", "fast", "params", "long", "dict", "rawdict",
                       "multiframe", "stream", "edge"]
+ENC_CATEGORIES = ["text", "logs", "source", "csv", "records", "dna", "real", "binary", "long"]
 
 
 def run_limited(args, timeout, preexec, cwd=None, env=None):
@@ -251,8 +258,63 @@ def run_case(binary, case, out_dir):
     return case, ok, why, secs
 
 
+def enc_credit(size, case):
+    """Same per-case credit as grading: 0.3 for stored -> baseline size, 0.7
+    for baseline -> reference size, in log size."""
+    s, b, r = case["stored_size"], case["baseline_size"], case["reference_size"]
+    if size <= r:
+        return 1.0
+    clamp = lambda v: min(1.0, max(0.0, v))
+    return 0.3 * clamp(math.log(s / size) / math.log(s / b)) + 0.7 * clamp(math.log(b / size) / math.log(b / r))
+
+
+def run_enc_case(binary, case, out_dir):
+    src = f"{SAMPLES}/encode/inputs/{case['id']}.bin"
+    zst, back = f"{out_dir}/{case['id']}.zst", f"{out_dir}/{case['id']}.back"
+    t0 = time.monotonic()
+    rc, log = run_limited([binary, "-z", src, zst], CASE_TIMEOUT, None, cwd=out_dir,
+                          env={"PATH": "/nonexistent", "HOME": out_dir, "LC_ALL": "C"})
+    secs = time.monotonic() - t0
+    if rc is None:
+        return case, None, "timeout", secs
+    if rc != 0:
+        return case, None, f"exit {rc}: {log.strip()[-160:]}", secs
+    rc, log = run_limited([binary, zst, back], CASE_TIMEOUT, None, cwd=out_dir,
+                          env={"PATH": "/nonexistent", "HOME": out_dir, "LC_ALL": "C"})
+    try:
+        same = rc == 0 and open(back, "rb").read() == open(src, "rb").read()
+    except OSError:
+        same = False
+    if not same:
+        return case, None, "does not round-trip through your decoder", secs
+    return case, os.path.getsize(zst), "ok", secs
+
+
+def encoder_report(binary, out_dir, verbose):
+    cases = json.load(open(f"{SAMPLES}/encode/manifest.json"))["cases"]
+    per, rows = {}, []
+    with ThreadPoolExecutor(8) as ex:
+        for case, size, why, secs in ex.map(lambda c: run_enc_case(binary, c, out_dir), cases):
+            credit = enc_credit(size, case) if size else 0.0
+            per.setdefault(case["category"], []).append(credit)
+            rows.append((case, size, credit, why, secs))
+    print(f"{'encoder':12s} {'credit':>7s}")
+    for c in ENC_CATEGORIES:
+        if c in per:
+            print(f"{c:12s} {sum(per[c]) / len(per[c]):7.3f}")
+    C = sum(sum(per[c]) / len(per[c]) if c in per else 0.0 for c in ENC_CATEGORIES) / len(ENC_CATEGORIES)
+    print(f"C = {C:.4f}  slowest encode: {max(r[4] for r in rows):.2f}s (limit {CASE_TIMEOUT}s)")
+    if verbose:
+        for case, size, credit, why, secs in rows:
+            print(f"  {case['id']} [{case['category']}] {case['size']} bytes -> {size} "
+                  f"(baseline {case['baseline_size']}, reference {case['reference_size']}) "
+                  f"credit {credit:.3f} {why}")
+    return C
+
+
 def main():
     verbose = "-v" in sys.argv
+    encode_only = "--encode" in sys.argv
     only = sys.argv[sys.argv.index("-k") + 1] if "-k" in sys.argv else None
     work = tempfile.mkdtemp(prefix="zselfcheck-")
     err = copy_source(SRC, f"{work}/src") or check_tree(f"{work}/src")
@@ -279,11 +341,15 @@ def main():
         return 1
     print("gates: source ok, build ok, linkage ok")
 
+    out_dir = f"{work}/out"
+    os.makedirs(out_dir)
+    if encode_only:
+        encoder_report(binary, out_dir, verbose)
+        shutil.rmtree(work, ignore_errors=True)
+        return 0
     cases = json.load(open(f"{SAMPLES}/manifest.json"))["cases"]
     if only:
         cases = [c for c in cases if only in c["category"]]
-    out_dir = f"{work}/out"
-    os.makedirs(out_dir)
     per, fails, slow = {}, [], 0.0
     plain = [0, 0]  # Raw/RLE-only success cases: reported, no weight in the score
     with ThreadPoolExecutor(8) as ex:
@@ -305,16 +371,19 @@ def main():
     if plain[1]:
         print(f"{'raw/rle-only':12s} {plain[0]:4d}/{plain[1]:<4d}  (not scored)")
     rate = lambda c: per[c][0] / per[c][1] if c in per else 0.0
-    if not only:
-        S = sum(rate(c) for c in SUCCESS_CATEGORIES) / len(SUCCESS_CATEGORIES)
-        E = rate("errors")
-        print(f"S = {S:.4f}  E = {E:.4f}  score on samples = S * (0.8 + 0.2 * E) = {S * (0.8 + 0.2 * E):.4f}")
-    print(f"slowest case: {slow:.2f}s (limit {CASE_TIMEOUT}s)")
+    print(f"slowest decode: {slow:.2f}s (limit {CASE_TIMEOUT}s)")
     if verbose:
         for case, why in fails:
             print(f"FAIL {case['id']} [{case['category']}] {case['note']}: {why}")
     elif fails:
-        print(f"{len(fails)} failing cases; rerun with -v to list them")
+        print(f"{len(fails)} failing decoder cases; rerun with -v to list them")
+    if not only:
+        S = sum(rate(c) for c in SUCCESS_CATEGORIES) / len(SUCCESS_CATEGORIES)
+        E = rate("errors")
+        D = S * (0.8 + 0.2 * E)
+        print(f"S = {S:.4f}  E = {E:.4f}  D = S * (0.8 + 0.2 * E) = {D:.4f}")
+        C = encoder_report(binary, out_dir, verbose)
+        print(f"score on samples = 0.4 * D + 0.6 * C = {0.4 * D + 0.6 * C:.4f}")
     shutil.rmtree(work, ignore_errors=True)
     return 0
 

@@ -5,15 +5,18 @@
 - **Specification:** RFC 8878, *Zstandard Compression and the application/zstd Media Type*
   (Y. Collet, M. Kucherawy, IETF, February 2021), <https://www.rfc-editor.org/rfc/rfc8878>.
   - The plain-text RFC ships unmodified at `/app/docs/rfc8878.txt`.
-  - It defines the frame, block, literals, sequences, FSE, Huffman and dictionary formats the
-    decoder implements.
+  - It defines the frame, block, literals, sequences, FSE, Huffman and dictionary formats that
+    both the decoder and the encoder implement.
 - **Reference implementation:** facebook/zstd, tag `v1.5.6`.
   - Tag object `35016bc1c0b9a2f7121b7ecc312100aad7d9f2ad`, commit
     `794ea1b0afca0f020f4e57b6732332231fb23c70`.
   - Release tarball `zstd-1.5.6.tar.gz`, SHA-256
     `8c29e06cf42aacc1eafc4077ae2ec6c6fcb96a626157e0593d5e82a34fd403c1`.
   - The `zstd` CLI was built from that tarball (`make -C programs zstd`). It produced every
-    compressed input in the bundle, and its own decoder confirmed every expected output.
+    compressed input in the bundle, and its own decoder confirmed every expected output. It also
+    decoded every reference encoder output used to fix the encoder size anchors.
+  - The `real` encoder category uses that tarball's own C sources and Markdown documents as
+    input data.
 - **Toolchain image:** `rust:1.83.0-slim-bookworm`
   (`sha256:540c902e99c384163b688bbd8b5b8520e94e7731b27f7bd0eaa56ae1960627ab`).
 
@@ -31,18 +34,34 @@ where linking the C libzstd is not allowed or not possible. The work is exactly 
 
 Strict rejection matters too: such decoders often sit on untrusted input.
 
+The encoder half is the harder engineering, and the one with an open-ended quality axis. Writing
+valid Zstandard frames is a few hundred lines, but the size of those frames depends on:
+- match finding over a large window;
+- how the input is parsed into sequences, from greedy and lazy parsing through to zstd's
+  price-driven optimal parser (`btopt`/`btultra`), which weighs every match length and repeat
+  offset against learned symbol costs;
+- Huffman and FSE table construction tuned per block.
+
+Pure-language encoders are a recurring need for the same sandboxed environments, and in practice
+they usually stop at fast, low-ratio parsing. Closing the ratio gap is iterative work: build,
+measure on a corpus, change the parser or cost model, and measure again.
+
 ## What the environment ships
 
-- `/app/zstdr` is a Cargo package. Only the command-line front end (`main.rs`: argument parsing,
-  file I/O, exit codes) is written; `frame::decode_all` is a stub returning an error.
-- All decoding logic was removed: bit readers, FSE, Huffman, literals, sequences, execution,
-  window, dictionaries, XXH64.
+- `/app/zstdr` is a Cargo package. Only the command-line front end (`main.rs`: argument parsing for
+  both modes, file I/O, exit codes) is written. `frame::decode_all` and `encode::compress` are stubs
+  that return an error.
+- All decoding and encoding logic was removed: bit readers and writers, FSE, Huffman, literals,
+  sequences, execution, window, dictionaries, XXH64, match finding and parsing.
 - No zstd binary, library binding or crate is available in the image. The base image's
   `libzstd.so.1` (a dependency of `dpkg`) is made unreadable while cases run, and the linkage gate
   forbids loading libraries or spawning programs.
-- `/app/samples` holds 132 visible cases with full expected outputs. They come from the same
-  generator families as the grading corpus, but with a different seed (777 vs. 20261022) and at
-  about 9% of its scale. The very large long-distance cases are excluded.
+- `/app/samples` holds 132 visible decoder cases with full expected outputs. They come from the
+  same generator families as the grading corpus, but with a different seed (777 vs. 20261022) and
+  at about 9% of its scale. The very large long-distance cases are excluded.
+- `/app/samples/encode` holds 25 visible encoder inputs with their three size anchors. They come
+  from the same generators as the 119 graded inputs, with seed 777 vs. 20261023 and sizes capped
+  at 362 KiB, except one long-range input.
 
 ## How the cases were built
 
@@ -83,8 +102,49 @@ independent Python XXH64.
 multiframe 90, stream 110, edge 123, errors 201. Expected outputs are stored as SHA-256 plus
 length.
 
+## How the encoder cases were built
+
+A second authoring script generated 119 inputs, 14 per category (7 for `long`), across nine
+categories:
+- **Synthetic:** the same seeded generators as above, covering text, JSON logs, C-like source,
+  CSV, packed records and DNA-like text.
+- **Real files:** zstd 1.5.6's own C sources and Markdown documents, concatenated and sliced.
+- **Binary:** slices of real ELF executables and shared libraries from the Debian bookworm image.
+- **Long range:** 2–5 MiB inputs that repeat a block megabytes later with a few edits.
+
+Sizes are log-uniform from 1 KiB to 1 MiB, outside `long`.
+
+For each input, the script records three sizes:
+- **stored:** one frame of Raw blocks;
+- **baseline:** the reference encoder built with its greedy hash-chain settings (Huffman
+  literals and transmitted FSE tables kept);
+- **reference:** the reference encoder itself.
+
+Every reference output was decoded by `zstd -d` 1.5.6 and compared byte for byte.
+
+Inputs were dropped when the baseline saved less than 5% over storing, or the reference less than
+1% over the baseline, because they cannot separate encoders. 12 `records` candidates and 1
+`binary` candidate were dropped this way. Grading checks every candidate output with a strict
+decoder built from the reference solution's decoder source. That decoder ships in `tests/refdec`
+and is never in the image.
+
 ## Reference solution
 
-`solution/zstdr-ref` is a std-only Rust decoder of about 1,100 non-blank lines, written by the task author
-directly from RFC 8878. No zstd source code was consulted for the decoding algorithms. It passes all
-1,099 grading cases and all 132 samples, and defines the score ceiling of 1.0.
+`solution/zstdr-ref` is a std-only Rust codec of about 2,400 non-blank lines, written by the task
+author.
+
+**Decoder.** Written directly from RFC 8878; no zstd source code was consulted for the decoding
+algorithms. It passes all 1,099 decoder cases and all 132 samples.
+
+**Encoder.**
+- A hash-chain match finder with a three-byte table for close short matches.
+- A price-driven forward optimal parser, which tracks repeat offsets along each path and learns
+  symbol prices from a first pass over each block.
+- Length-limited Huffman literals with FSE-compressed weights, and per-stream choice of
+  predefined, RLE or transmitted FSE tables.
+- A lazy parse as fallback when it is smaller.
+
+The parser follows the published design of zstd's optimal parser but was written independently.
+On the authoring bench it totals within 2% of `zstd -19 --no-check` and beats `zstd -9`. It
+reproduces its own frozen sizes exactly: all of its decisions use integer arithmetic. It defines
+the score ceiling of 1.0, with D = 1 and C = 1.

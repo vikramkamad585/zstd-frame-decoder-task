@@ -1,0 +1,204 @@
+{
+"cases": [
+{
+"id": "00000",
+"category": "text",
+"size": 3954,
+"stored_size": 3964,
+"baseline_size": 1499,
+"reference_size": 1429
+},
+{
+"id": "00001",
+"category": "text",
+"size": 8983,
+"stored_size": 8993,
+"baseline_size": 2702,
+"reference_size": 2550
+},
+{
+"id": "00002",
+"category": "text",
+"size": 7420,
+"stored_size": 7430,
+"baseline_size": 2448,
+"reference_size": 2313
+},
+{
+"id": "00003",
+"category": "logs",
+"size": 235098,
+"stored_size": 235113,
+"baseline_size": 40824,
+"reference_size": 33257
+},
+{
+"id": "00004",
+"category": "logs",
+"size": 40037,
+"stored_size": 40047,
+"baseline_size": 7071,
+"reference_size": 6081
+},
+{
+"id": "00005",
+"category": "logs",
+"size": 5619,
+"stored_size": 5629,
+"baseline_size": 1276,
+"reference_size": 1158
+},
+{
+"id": "00006",
+"category": "source",
+"size": 244313,
+"stored_size": 244328,
+"baseline_size": 49163,
+"reference_size": 41462
+},
+{
+"id": "00007",
+"category": "source",
+"size": 191840,
+"stored_size": 191855,
+"baseline_size": 38631,
+"reference_size": 32820
+},
+{
+"id": "00008",
+"category": "source",
+"size": 80143,
+"stored_size": 80155,
+"baseline_size": 16504,
+"reference_size": 14525
+},
+{
+"id": "00009",
+"category": "csv",
+"size": 1031,
+"stored_size": 1041,
+"baseline_size": 551,
+"reference_size": 541
+},
+{
+"id": "00010",
+"category": "csv",
+"size": 7513,
+"stored_size": 7523,
+"baseline_size": 3540,
+"reference_size": 3375
+},
+{
+"id": "00011",
+"category": "csv",
+"size": 1925,
+"stored_size": 1935,
+"baseline_size": 954,
+"reference_size": 928
+},
+{
+"id": "00012",
+"category": "records",
+"size": 124220,
+"stored_size": 124232,
+"baseline_size": 85000,
+"reference_size": 81716
+},
+{
+"id": "00013",
+"category": "records",
+"size": 32484,
+"stored_size": 32494,
+"baseline_size": 20829,
+"reference_size": 20599
+},
+{
+"id": "00014",
+"category": "records",
+"size": 37170,
+"stored_size": 37180,
+"baseline_size": 23932,
+"reference_size": 23654
+},
+{
+"id": "00015",
+"category": "dna",
+"size": 1605,
+"stored_size": 1615,
+"baseline_size": 249,
+"reference_size": 244
+},
+{
+"id": "00016",
+"category": "dna",
+"size": 5172,
+"stored_size": 5182,
+"baseline_size": 1355,
+"reference_size": 1257
+},
+{
+"id": "00017",
+"category": "dna",
+"size": 19050,
+"stored_size": 19060,
+"baseline_size": 3656,
+"reference_size": 3404
+},
+{
+"id": "00018",
+"category": "real",
+"size": 2756,
+"stored_size": 2766,
+"baseline_size": 1174,
+"reference_size": 1152
+},
+{
+"id": "00019",
+"category": "real",
+"size": 3704,
+"stored_size": 3714,
+"baseline_size": 1257,
+"reference_size": 1231
+},
+{
+"id": "00020",
+"category": "real",
+"size": 1724,
+"stored_size": 1734,
+"baseline_size": 707,
+"reference_size": 695
+},
+{
+"id": "00021",
+"category": "binary",
+"size": 278527,
+"stored_size": 278545,
+"baseline_size": 60423,
+"reference_size": 55681
+},
+{
+"id": "00022",
+"category": "binary",
+"size": 24115,
+"stored_size": 24125,
+"baseline_size": 6678,
+"reference_size": 6077
+},
+{
+"id": "00023",
+"category": "binary",
+"size": 246709,
+"stored_size": 246724,
+"baseline_size": 115938,
+"reference_size": 104777
+},
+{
+"id": "00024",
+"category": "long",
+"size": 1489938,
+"stored_size": 1489983,
+"baseline_size": 252113,
+"reference_size": 217873
+}
+]
+}

@@ -1,0 +1,88 @@
+ags);
+        op += cSize;
+        cLitSize += cSize;
+        if (cSize == 0 || ERR_isError(cSize)) {
+            DEBUGLOG(5, "Failed to write entropy tables %s", ZSTD_getErrorName(cSize));
+            return 0;
+        }
+        /* If we expand and we aren't writing a header then emit uncompressed */
+        if (!writeEntropy && cLitSize >= litSize) {
+            DEBUGLOG(5, "ZSTD_compressSubBlock_literal using raw literal because uncompressible");
+            return ZSTD_noCompressLiterals(dst, dstSize, literals, litSize);
+        }
+        /* If we are writing headers then allow expansion that doesn't change our header size. */
+        if (lhSize < (size_t)(3 + (cLitSize >= 1 KB) + (cLitSize >= 16 KB))) {
+            assert(cLitSize > litSize);
+            DEBUGLOG(5, "Literals expanded beyond allowed header size");
+            return ZSTD_noCompressLiterals(dst, dstSize, literals, litSize);
+        }
+        DEBUGLOG(5, "ZSTD_compressSubBlock_literal (cSize=%zu)", cSize);
+    }
+
+    /* Build header */
+    switch(lhSize)
+    {
+    case 3: /* 2 - 2 - 10 - 10 */
+        {   U32 const lhc = hType + ((U32)(!singleStream) << 2) + ((U32)litSize<<4) + ((U32)cLitSize<<14);
+            MEM_writeLE24(ostart, lhc);
+            break;
+        }
+    case 4: /* 2 - 2 - 14 - 14 */
+        {   U32 const lhc = hType + (2 << 2) + ((U32)litSize<<4) + ((U32)cLitSize<<18);
+            MEM_writeLE32(ostart, lhc);
+            break;
+        }
+    case 5: /* 2 - 2 - 18 - 18 */
+        {   U32 const lhc = hType + (3 << 2) + ((U32)litSize<<4) + ((U32)cLitSize<<22);
+            MEM_writeLE32(ostart, lhc);
+            ostart[4] = (BYTE)(cLitSize >> 10);
+            break;
+        }
+    default:  /* not possible : lhSize is {3,4,5} */
+        assert(0);
+    }
+    *entropyWritten = 1;
+    DEBUGLOG(5, "Compressed literals: %u -> %u", (U32)litSize, (U32)(op-ostart));
+    return (size_t)(op-ostart);
+}
+
+static size_t
+ZSTD_seqDecompressedSize(seqStore_t const* seqStore,
+                   const seqDef* sequences, size_t nbSeqs,
+                         size_t litSize, int lastSubBlock)
+{
+    size_t matchLengthSum = 0;
+    size_t litLengthSum = 0;
+    size_t n;
+    for (n=0; n<nbSeqs; n++) {
+        const ZSTD_sequenceLength seqLen = ZSTD_getSequenceLength(seqStore, sequences+n);
+        litLengthSum += seqLen.litLength;
+        matchLengthSum += seqLen.matchLength;
+    }
+    DEBUGLOG(5, "ZSTD_seqDecompressedSize: %u sequences from %p: %u literals + %u matchlength",
+                (unsigned)nbSeqs, (const void*)sequences,
+                (unsigned)litLengthSum, (unsigned)matchLengthSum);
+    if (!lastSubBlock)
+        assert(litLengthSum == litSize);
+    else
+        assert(litLengthSum <= litSize);
+    (void)litLengthSum;
+    return matchLengthSum + litSize;
+}
+
+/** ZSTD_compressSubBlock_sequences() :
+ *  Compresses sequences section for a sub-block.
+ *  fseMetadata->llType, fseMetadata->ofType, and fseMetadata->mlType have
+ *  symbol compression modes for the super-block.
+ *  The first successfully compressed block will have these in its header.
+ *  We set entropyWritten=1 when we succeed in compressing the sequences.
+ *  The following sub-blocks will always have repeat mode.
+ *  @return : compressed size of sequences section of a sub-block
+ *            Or 0 if it is unable to compress
+ *            Or error code. */
+static size_t
+ZSTD_compressSubBlock_sequences(const ZSTD_fseCTables_t* fseTables,
+                                const ZSTD_fseCTablesMetadata_t* fseMetadata,
+                                const seqDef* sequences, size_t nbSeq,
+                                const BYTE* llCode, const BYTE* mlCode, const BYTE* ofCode,
+                                

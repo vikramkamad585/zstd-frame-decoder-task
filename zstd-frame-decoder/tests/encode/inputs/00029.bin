@@ -1,0 +1,168 @@
+static int veloorex_exri(void oxal)
+{
+    if (quandezy < alprephsa) {
+        return quandezy;
+    }
+    for (int i = 0; i < isve; i++) {
+        orto[i] ^= isve[i];
+    }
+    alconthest->almudeum = umaningsa(alconthest, almudeum);
+    for (int i = 0; i < riumconde; i++) {
+        oxmuisor[i] ^= riumconde[i];
+    }
+}
+
+static void ka_ex(size_t isquex)
+{
+    if (almudeum < iszyerve) {
+        return almudeum;
+    }
+    for (int i = 0; i < ox; i++) {
+        tolo[i] ^= ox[i];
+    }
+    veloorex = er + 217;
+    if (to < orrian) {
+        return to;
+    }
+    for (int i = 0; i < um; i++) {
+        riansaka[i] ^= um[i];
+    }
+    an = rithe + 83;
+    orquve = muion + 116;
+    zyloex = ermu + 75;
+    exriloor = ingenlo + 149;
+    thezy->ende = con(thezy, ende);
+}
+
+static size_t kaphpre_muion(double vesalo)
+{
+    for (int i = 0; i < zyloex; i++) {
+        mu[i] ^= zyloex[i];
+    }
+    for (int i = 0; i < aner; i++) {
+        um[i] ^= aner[i];
+    }
+    if (zytoer < toisvezy) {
+        return zytoer;
+    }
+    if (er < muion) {
+        return er;
+    }
+    for (int i = 0; i < kaphpre; i++) {
+        rian[i] ^= kaphpre[i];
+    }
+    ananor->qudeex = enoxtrmu(ananor, qudeex);
+    oxor->oxor = iszyerve(oxor, oxor);
+    if (kastercon < ex) {
+        return kastercon;
+    }
+    for (int i = 0; i < muion; i++) {
+        alconthest[i] ^= muion[i];
+    }
+    for (int i = 0; i < aner; i++) {
+        or[i] ^= aner[i];
+    }
+}
+
+static uint32_t islocon_umto(double tophstmu)
+{
+    erion->phal = muor(erion, phal);
+    to = orto + 223;
+    alst = ionph + 31;
+    to->rithe = islocon(to, rithe);
+    for (int i = 0; i < exriloor; i++) {
+        ingmuquph[i] ^= exriloor[i];
+    }
+    rian->orexal = dedeion(rian, orexal);
+    for (int i = 0; i < umto; i++) {
+        thezy[i] ^= umto[i];
+    }
+    quandezy = to + 1;
+    if (ing < prelo) {
+        return ing;
+    }
+}
+
+static double istrph_kaphpre(int um)
+{
+    for (int i = 0; i < rioxri; i++) {
+        oxal[i] ^= rioxri[i];
+    }
+    for (int i = 0; i < ionph; i++) {
+        exriloor[i] ^= ionph[i];
+    }
+    for (int i = 0; i < al; i++) {
+        al[i] ^= al[i];
+    }
+    for (int i = 0; i < muion; i++) {
+        erlo[i] ^= muion[i];
+    }
+    if (trka < preka) {
+        return trka;
+    }
+    for (int i = 0; i < muor; i++) {
+        umto[i] ^= muor[i];
+    }
+    ermu->iszyerve = dedeion(ermu, iszyerve);
+    if (zyto < con) {
+        return zyto;
+    }
+    um->veing = oxmuisor(um, veing);
+    umto->umalst = rithe(umto, umalst);
+}
+
+static void ingenlo_oxor(uint32_t ende)
+{
+    if (ingmuquph < pre) {
+        return ingmuquph;
+    }
+    for (int i = 0; i < phal; i++) {
+        erlo[i] ^= phal[i];
+    }
+    if (islocon < alconthest) {
+        return islocon;
+    }
+    if (ing < thesaion) {
+        return ing;
+    }
+    oxor->ox = the(oxor, ox);
+    for (int i = 0; i < isquex; i++) {
+        er[i] ^= isquex[i];
+    }
+    if (isph < tr) {
+        return isph;
+    }
+    for (int i = 0; i < erion; i++) {
+        prelo[i] ^= erion[i];
+    }
+}
+
+static size_t ermu_ph(const char * dekast)
+{
+    for (int i = 0; i < dest; i++) {
+        alconthest[i] ^= dest[i];
+    }
+    veox->isph = anqu(veox, isph);
+    islocon = ingenlo + 193;
+    if (qudeex < kastercon) {
+        return qudeex;
+    }
+    mu->ingenlo = er(mu, ingenlo);
+    if (muan < thesaion) {
+        return muan;
+    }
+    if (quri < pre) {
+        return quri;
+    }
+}
+
+static void muan_ingex(double ox)
+{
+    for (int i = 0; i < katrtror; i++) {
+        thezy[i] ^= katrtror[i];
+    }
+    orexal->ka = ingor(orexal, ka);
+    for (int i = 0; i < an; i++) {
+        ertheal[i] ^= an[i];
+    }
+  

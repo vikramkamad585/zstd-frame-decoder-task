@@ -1,0 +1,10 @@
+{"ts": 1700869365012, "level": "WARN", "svc": "auth", "msg": "queue drained", "latency_ms": 45.55, "req": "58b43b60138b9951", "code": 500}
+{"ts": 1700869366147, "level": "INFO", "svc": "search", "msg": "token refreshed", "latency_ms": 37.17, "req": "32e17ba9fe9bcbcd", "code": 200}
+{"ts": 1700869366590, "level": "DEBUG", "svc": "ingest", "msg": "slow query", "latency_ms": 13.65, "req": "6303efa277a94496", "code": 500}
+{"ts": 1700869367309, "level": "WARN", "svc": "billing", "msg": "slow query", "latency_ms": 22.31, "req": "7c7aea7e7a1bd3d9", "code": 404}
+{"ts": 1700869369012, "level": "ERROR", "svc": "cache", "msg": "retrying upstream", "latency_ms": 11.49, "req": "a3949832f1f6f13f", "code": 404}
+{"ts": 1700869370410, "level": "DEBUG", "svc": "scheduler", "msg": "request completed", "latency_ms": 15.76, "req": "ae3c71a4456241db", "code": 200}
+{"ts": 1700869371379, "level": "ERROR", "svc": "auth", "msg": "flush complete", "latency_ms": 24.82, "req": "32f2e6378e50a860", "code": 200}
+{"ts": 1700869373457, "level": "DEBUG", "svc": "auth", "msg": "request completed", "latency_ms": 71.82, "req": "32897715f42e4735", "code": 204}
+{"ts": 1700869374360, "level": "ERROR", "svc": "cache", "msg": "token refreshed", "latency_ms": 232.92, "req": "e7c2e61cb05e0ba7", "code": 200}
+{"ts": 1700869375920, "level": "INFO"

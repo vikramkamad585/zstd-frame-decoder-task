@@ -1,6 +1,6 @@
 [task]
 name = "afterquery/zstd-frame-decoder"
-description = "Implement a complete Zstandard (RFC 8878) decoder in std-only Rust: frames, Huffman and FSE entropy stages, sequence execution, dictionaries, checksums and strict rejection of malformed input."
+description = "Implement a Zstandard (RFC 8878) codec in std-only Rust: a complete, strict decoder and an encoder scored on compression ratio against a near-zstd -19 reference."
 
 [metadata]
 paradigm = "implementation"
@@ -8,7 +8,7 @@ compute = "cpu"
 languages = ["rust"]
 category = "compression"
 difficulty = "frontier"
-tags = ["zstd", "rfc8878", "entropy-coding", "huffman", "fse", "rust"]
+tags = ["zstd", "rfc8878", "entropy-coding", "huffman", "fse", "lz77", "optimal-parsing", "rust"]
 oracle_reward_threshold = 1.0
 
 [agent]

@@ -1,0 +1,1316 @@
+YING file in the root directory of this source tree).
+ * You may select, at your option, one of the above-listed licenses.
+ */
+
+
+ /******************************************
+ *  Includes
+ ******************************************/
+#include <stddef.h>    /* size_t, ptrdiff_t */
+#include <string.h>    /* memcpy */
+
+#include "zstd_v04.h"
+#include "../common/compiler.h"
+#include "../common/error_private.h"
+
+
+/* ******************************************************************
+ *   mem.h
+ *******************************************************************/
+#ifndef MEM_H_MODULE
+#define MEM_H_MODULE
+
+#if defined (__cplusplus)
+extern "C" {
+#endif
+
+
+/******************************************
+*  Compiler-specific
+******************************************/
+#if defined(_MSC_VER)   /* Visual Studio */
+#   include <stdlib.h>  /* _byteswap_ulong */
+#   include <intrin.h>  /* _byteswap_* */
+#endif
+
+
+/****************************************************************
+*  Basic Types
+*****************************************************************/
+#if defined (__cplusplus) || (defined (__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L) /* C99 */)
+# if defined(_AIX)
+#  include <inttypes.h>
+# else
+#  include <stdint.h> /* intptr_t */
+# endif
+  typedef  uint8_t BYTE;
+  typedef uint16_t U16;
+  typedef  int16_t S16;
+  typedef uint32_t U32;
+  typedef  int32_t S32;
+  typedef uint64_t U64;
+  typedef  int64_t S64;
+#else
+  typedef unsigned char       BYTE;
+  typedef unsigned short      U16;
+  typedef   signed short      S16;
+  typedef unsigned int        U32;
+  typedef   signed int        S32;
+  typedef unsigned long long  U64;
+  typedef   signed long long  S64;
+#endif
+
+
+/*-*************************************
+*  Debug
+***************************************/
+#include "../common/debug.h"
+#ifndef assert
+#  define assert(condition) ((void)0)
+#endif
+
+
+/****************************************************************
+*  Memory I/O
+*****************************************************************/
+
+MEM_STATIC unsigned MEM_32bits(void) { return sizeof(void*)==4; }
+MEM_STATIC unsigned MEM_64bits(void) { return sizeof(void*)==8; }
+
+MEM_STATIC unsigned MEM_isLittleEndian(void)
+{
+    const union { U32 u; BYTE c[4]; } one = { 1 };   /* don't use static : performance detrimental  */
+    return one.c[0];
+}
+
+MEM_STATIC U16 MEM_read16(const void* memPtr)
+{
+    U16 val; memcpy(&val, memPtr, sizeof(val)); return val;
+}
+
+MEM_STATIC U32 MEM_read32(const void* memPtr)
+{
+    U32 val; memcpy(&val, memPtr, sizeof(val)); return val;
+}
+
+MEM_STATIC U64 MEM_read64(const void* memPtr)
+{
+    U64 val; memcpy(&val, memPtr, sizeof(val)); return val;
+}
+
+MEM_STATIC void MEM_write16(void* memPtr, U16 value)
+{
+    memcpy(memPtr, &value, sizeof(value));
+}
+
+MEM_STATIC U16 MEM_readLE16(const void* memPtr)
+{
+    if (MEM_isLittleEndian())
+        return MEM_read16(memPtr);
+    else
+    {
+        const BYTE* p = (const BYTE*)memPtr;
+        return (U16)(p[0] + (p[1]<<8));
+    }
+}
+
+MEM_STATIC void MEM_writeLE16(void* memPtr, U16 val)
+{
+    if (MEM_isLittleEndian())
+    {
+        MEM_write16(memPtr, val);
+    }
+    else
+    {
+        BYTE* p = (BYTE*)memPtr;
+        p[0] = (BYTE)val;
+        p[1] = (BYTE)(val>>8);
+    }
+}
+
+MEM_STATIC U32 MEM_readLE24(const void* memPtr)
+{
+    return MEM_readLE16(memPtr) + (((const BYTE*)memPtr)[2] << 16);
+}
+
+MEM_STATIC U32 MEM_readLE32(const void* memPtr)
+{
+    if (MEM_isLittleEndian())
+        return MEM_read32(memPtr);
+    else
+    {
+        const BYTE* p = (const BYTE*)memPtr;
+        return (U32)((U32)p[0] + ((U32)p[1]<<8) + ((U32)p[2]<<16) + ((U32)p[3]<<24));
+    }
+}
+
+
+MEM_STATIC U64 MEM_readLE64(const void* memPtr)
+{
+    if (MEM_isLittleEndian())
+        return MEM_read64(memPtr);
+    else
+    {
+        const BYTE* p = (const BYTE*)memPtr;
+        return (U64)((U64)p[0] + ((U64)p[1]<<8) + ((U64)p[2]<<16) + ((U64)p[3]<<24)
+                     + ((U64)p[4]<<32) + ((U64)p[5]<<40) + ((U64)p[6]<<48) + ((U64)p[7]<<56));
+    }
+}
+
+
+MEM_STATIC size_t MEM_readLEST(const void* memPtr)
+{
+    if (MEM_32bits())
+        return (size_t)MEM_readLE32(memPtr);
+    else
+        return (size_t)MEM_readLE64(memPtr);
+}
+
+
+#if defined (__cplusplus)
+}
+#endif
+
+#endif /* MEM_H_MODULE */
+
+/*
+    zstd - standard compression library
+    Header File for static linking only
+*/
+#ifndef ZSTD_STATIC_H
+#define ZSTD_STATIC_H
+
+
+/* *************************************
+*  Types
+***************************************/
+#define ZSTD_WINDOWLOG_ABSOLUTEMIN 11
+
+/** from faster to stronger */
+typedef enum { ZSTD_fast, ZSTD_greedy, ZSTD_lazy, ZSTD_lazy2, ZSTD_btlazy2 } ZSTD_strategy;
+
+typedef struct
+{
+    U64 srcSize;       /* optional : tells how much bytes are present in the frame. Use 0 if not known. */
+    U32 windowLog;     /* largest match distance : larger == more compression, more memory needed during decompression */
+    U32 contentLog;    /* full search segment : larger == more compression, slower, more memory (useless for fast) */
+    U32 hashLog;       /* dispatch table : larger == more memory, faster */
+    U32 searchLog;     /* nb of searches : larger == more compression, slower */
+    U32 searchLength;  /* size of matches : larger == faster decompression, sometimes less compression */
+    ZSTD_strategy strategy;
+} ZSTD_parameters;
+
+typedef ZSTDv04_Dctx ZSTD_DCtx;
+
+/* *************************************
+*  Advanced functions
+***************************************/
+/** ZSTD_decompress_usingDict
+*   Same as ZSTD_decompressDCtx, using a Dictionary content as prefix
+*   Note : dict can be NULL, in which case, it's equivalent to ZSTD_decompressDCtx() */
+static size_t ZSTD_decompress_usingDict(ZSTD_DCtx* ctx,
+                                             void* dst, size_t maxDstSize,
+                                       const void* src, size_t srcSize,
+                                       const void* dict,size_t dictSize);
+
+
+/* **************************************
+*  Streaming functions (direct mode)
+****************************************/
+static size_t ZSTD_resetDCtx(ZSTD_DCtx* dctx);
+static size_t ZSTD_getFrameParams(ZSTD_parameters* params, const void* src, size_t srcSize);
+static void   ZSTD_decompress_insertDictionary(ZSTD_DCtx* ctx, const void* src, size_t srcSize);
+
+static size_t ZSTD_nextSrcSizeToDecompress(ZSTD_DCtx* dctx);
+static size_t ZSTD_decompressContinue(ZSTD_DCtx* dctx, void* dst, size_t maxDstSize, const void* src, size_t srcSize);
+
+/**
+  Streaming decompression, bufferless mode
+
+  A ZSTD_DCtx object is required to track streaming operations.
+  Use ZSTD_createDCtx() / ZSTD_freeDCtx() to manage it.
+  A ZSTD_DCtx object can be re-used multiple times. Use ZSTD_resetDCtx() to return to fresh status.
+
+  First operation is to retrieve frame parameters, using ZSTD_getFrameParams().
+  This function doesn't consume its input. It needs enough input data to properly decode the frame header.
+  Objective is to retrieve *params.windowlog, to know minimum amount of memory required during decoding.
+  Result : 0 when successful, it means the ZSTD_parameters structure has been filled.
+           >0 : means there is not enough data into src. Provides the expected size to successfully decode header.
+           errorCode, which can be tested using ZSTD_isError() (For example, if it's not a ZSTD header)
+
+  Then, you can optionally insert a dictionary.
+  This operation must mimic the compressor behavior, otherwise decompression will fail or be corrupted.
+
+  Then it's possible to start decompression.
+  Use ZSTD_nextSrcSizeToDecompress() and ZSTD_decompressContinue() alternatively.
+  ZSTD_nextSrcSizeToDecompress() tells how much bytes to provide as 'srcSize' to ZSTD_decompressContinue().
+  ZSTD_decompressContinue() requires this exact amount of bytes, or it will fail.
+  ZSTD_decompressContinue() needs previous data blocks during decompression, up to (1 << windowlog).
+  They should preferably be located contiguously, prior to current block. Alternatively, a round buffer is also possible.
+
+  @result of ZSTD_decompressContinue() is the number of bytes regenerated within 'dst'.
+  It can be zero, which is not an error; it just means ZSTD_decompressContinue() has decoded some header.
+
+  A frame is fully decoded when ZSTD_nextSrcSizeToDecompress() returns zero.
+  Context can then be reset to start a new decompression.
+*/
+
+
+
+
+#endif  /* ZSTD_STATIC_H */
+
+
+/*
+    zstd_internal - common functions to include
+    Header File for include
+*/
+#ifndef ZSTD_CCOMMON_H_MODULE
+#define ZSTD_CCOMMON_H_MODULE
+
+/* *************************************
+*  Common macros
+***************************************/
+#define MIN(a,b) ((a)<(b) ? (a) : (b))
+#define MAX(a,b) ((a)>(b) ? (a) : (b))
+
+
+/* *************************************
+*  Common constants
+***************************************/
+#define ZSTD_MAGICNUMBER 0xFD2FB524   /* v0.4 */
+
+#define KB *(1 <<10)
+#define MB *(1 <<20)
+#define GB *(1U<<30)
+
+#define BLOCKSIZE (128 KB)                 /* define, for static allocation */
+
+static const size_t ZSTD_blockHeaderSize = 3;
+static const size_t ZSTD_frameHeaderSize_min = 5;
+#define ZSTD_frameHeaderSize_max 5         /* define, for static allocation */
+
+#define BIT7 128
+#define BIT6  64
+#define BIT5  32
+#define BIT4  16
+#define BIT1   2
+#define BIT0   1
+
+#define IS_RAW BIT0
+#define IS_RLE BIT1
+
+#define MINMATCH 4
+#define REPCODE_STARTVALUE 4
+
+#define MLbits   7
+#define LLbits   6
+#define Offbits  5
+#define MaxML  ((1<<MLbits) - 1)
+#define MaxLL  ((1<<LLbits) - 1)
+#define MaxOff ((1<<Offbits)- 1)
+#define MLFSELog   10
+#define LLFSELog   10
+#define OffFSELog   9
+#define MaxSeq MAX(MaxLL, MaxML)
+
+#define MIN_SEQUENCES_SIZE (2 /*seqNb*/ + 2 /*dumps*/ + 3 /*seqTables*/ + 1 /*bitStream*/)
+#define MIN_CBLOCK_SIZE (3 /*litCSize*/ + MIN_SEQUENCES_SIZE)
+
+#define ZSTD_CONTENTSIZE_ERROR   (0ULL - 2)
+
+typedef enum { bt_compressed, bt_raw, bt_rle, bt_end } blockType_t;
+
+
+/* ******************************************
+*  Shared functions to include for inlining
+********************************************/
+static void ZSTD_copy8(void* dst, const void* src) { memcpy(dst, src, 8); }
+
+#define COPY8(d,s) { ZSTD_copy8(d,s); d+=8; s+=8; }
+
+/*! ZSTD_wildcopy : custom version of memcpy(), can copy up to 7-8 bytes too many */
+static void ZSTD_wildcopy(void* dst, const void* src, ptrdiff_t length)
+{
+    const BYTE* ip = (const BYTE*)src;
+    BYTE* op = (BYTE*)dst;
+    BYTE* const oend = op + length;
+    do
+        COPY8(op, ip)
+    while (op < oend);
+}
+
+
+
+/* ******************************************************************
+   FSE : Finite State Entropy coder
+   header file
+****************************************************************** */
+#ifndef FSE_H
+#define FSE_H
+
+#if defined (__cplusplus)
+extern "C" {
+#endif
+
+
+/* *****************************************
+*  Includes
+******************************************/
+#include <stddef.h>    /* size_t, ptrdiff_t */
+
+
+/* *****************************************
+*  FSE simple functions
+******************************************/
+static size_t FSE_decompress(void* dst,  size_t maxDstSize,
+                const void* cSrc, size_t cSrcSize);
+/*!
+FSE_decompress():
+    Decompress FSE data from buffer 'cSrc', of size 'cSrcSize',
+    into already allocated destination buffer 'dst', of size 'maxDstSize'.
+    return : size of regenerated data (<= maxDstSize)
+             or an error code, which can be tested using FSE_isError()
+
+    ** Important ** : FSE_decompress() doesn't decompress non-compressible nor RLE data !!!
+    Why ? : making this distinction requires a header.
+    Header management is intentionally delegated to the user layer, which can better manage special cases.
+*/
+
+
+/* *****************************************
+*  Tool functions
+******************************************/
+/* Error Management */
+static unsigned    FSE_isError(size_t code);        /* tells if a return value is an error code */
+
+
+
+/* *****************************************
+*  FSE detailed API
+******************************************/
+/*!
+FSE_compress() does the following:
+1. count symbol occurrence from source[] into table count[]
+2. normalize counters so that sum(count[]) == Power_of_2 (2^tableLog)
+3. save normalized counters to memory buffer using writeNCount()
+4. build encoding table 'CTable' from normalized counters
+5. encode the data stream using encoding table 'CTable'
+
+FSE_decompress() does the following:
+1. read normalized counters with readNCount()
+2. build decoding table 'DTable' from normalized counters
+3. decode the data stream using decoding table 'DTable'
+
+The following API allows targeting specific sub-functions for advanced tasks.
+For example, it's possible to compress several blocks using the same 'CTable',
+or to save and provide normalized distribution using external method.
+*/
+
+
+/* *** DECOMPRESSION *** */
+
+/*!
+FSE_readNCount():
+   Read compactly saved 'normalizedCounter' from 'rBuffer'.
+   return : size read from 'rBuffer'
+            or an errorCode, which can be tested using FSE_isError()
+            maxSymbolValuePtr[0] and tableLogPtr[0] will also be updated with their respective values */
+static  size_t FSE_readNCount (short* normalizedCounter, unsigned* maxSymbolValuePtr, unsigned* tableLogPtr, const void* rBuffer, size_t rBuffSize);
+
+/*!
+Constructor and Destructor of type FSE_DTable
+    Note that its size depends on 'tableLog' */
+typedef unsigned FSE_DTable;   /* don't allocate that. It's just a way to be more restrictive than void* */
+
+/*!
+FSE_buildDTable():
+   Builds 'dt', which must be already allocated, using FSE_createDTable()
+   return : 0,
+            or an errorCode, which can be tested using FSE_isError() */
+static size_t FSE_buildDTable ( FSE_DTable* dt, const short* normalizedCounter, unsigned maxSymbolValue, unsigned tableLog);
+
+/*!
+FSE_decompress_usingDTable():
+   Decompress compressed source 'cSrc' of size 'cSrcSize' using 'dt'
+   into 'dst' which must be already allocated.
+   return : size of regenerated data (necessarily <= maxDstSize)
+            or an errorCode, which can be tested using FSE_isError() */
+static  size_t FSE_decompress_usingDTable(void* dst, size_t maxDstSize, const void* cSrc, size_t cSrcSize, const FSE_DTable* dt);
+
+/*!
+Tutorial :
+----------
+(Note : these functions only decompress FSE-compressed blocks.
+ If block is uncompressed, use memcpy() instead
+ If block is a single repeated byte, use memset() instead )
+
+The first step is to obtain the normalized frequencies of symbols.
+This can be performed by FSE_readNCount() if it was saved using FSE_writeNCount().
+'normalizedCounter' must be already allocated, and have at least 'maxSymbolValuePtr[0]+1' cells of signed short.
+In practice, that means it's necessary to know 'maxSymbolValue' beforehand,
+or size the table to handle worst case situations (typically 256).
+FSE_readNCount() will provide 'tableLog' and 'maxSymbolValue'.
+The result of FSE_readNCount() is the number of bytes read from 'rBuffer'.
+Note that 'rBufferSize' must be at least 4 bytes, even if useful information is less than that.
+If there is an error, the function will return an error code, which can be tested using FSE_isError().
+
+The next step is to build the decompression tables 'FSE_DTable' from 'normalizedCounter'.
+This is performed by the function FSE_buildDTable().
+The space required by 'FSE_DTable' must be already allocated using FSE_createDTable().
+If there is an error, the function will return an error code, which can be tested using FSE_isError().
+
+'FSE_DTable' can then be used to decompress 'cSrc', with FSE_decompress_usingDTable().
+'cSrcSize' must be strictly correct, otherwise decompression will fail.
+FSE_decompress_usingDTable() result will tell how many bytes were regenerated (<=maxDstSize).
+If there is an error, the function will return an error code, which can be tested using FSE_isError(). (ex: dst buffer too small)
+*/
+
+
+#if defined (__cplusplus)
+}
+#endif
+
+#endif  /* FSE_H */
+
+
+/* ******************************************************************
+   bitstream
+   Part of NewGen Entropy library
+   header file (to include)
+   Copyright (C) 2013-2015, Yann Collet.
+
+   BSD 2-Clause License (https://opensource.org/licenses/bsd-license.php)
+
+   Redistribution and use in source and binary forms, with or without
+   modification, are permitted provided that the following conditions are
+   met:
+
+       * Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+       * Redistributions in binary form must reproduce the above
+   copyright notice, this list of conditions and the following disclaimer
+   in the documentation and/or other materials provided with the
+   distribution.
+
+   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+   A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+   OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+   LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+   DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+   THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+   You can contact the author at :
+   - Source repository : https://github.com/Cyan4973/FiniteStateEntropy
+   - Public forum : https://groups.google.com/forum/#!forum/lz4c
+****************************************************************** */
+#ifndef BITSTREAM_H_MODULE
+#define BITSTREAM_H_MODULE
+
+#if defined (__cplusplus)
+extern "C" {
+#endif
+
+
+/*
+*  This API consists of small unitary functions, which highly benefit from being inlined.
+*  Since link-time-optimization is not available for all compilers,
+*  these functions are defined into a .h to be included.
+*/
+
+/**********************************************
+*  bitStream decompression API (read backward)
+**********************************************/
+typedef struct
+{
+    size_t   bitContainer;
+    unsigned bitsConsumed;
+    const char* ptr;
+    const char* start;
+} BIT_DStream_t;
+
+typedef enum { BIT_DStream_unfinished = 0,
+               BIT_DStream_endOfBuffer = 1,
+               BIT_DStream_completed = 2,
+               BIT_DStream_overflow = 3 } BIT_DStream_status;  /* result of BIT_reloadDStream() */
+               /* 1,2,4,8 would be better for bitmap combinations, but slows down performance a bit ... :( */
+
+MEM_STATIC size_t   BIT_initDStream(BIT_DStream_t* bitD, const void* srcBuffer, size_t srcSize);
+MEM_STATIC size_t   BIT_readBits(BIT_DStream_t* bitD, unsigned nbBits);
+MEM_STATIC BIT_DStream_status BIT_reloadDStream(BIT_DStream_t* bitD);
+MEM_STATIC unsigned BIT_endOfDStream(const BIT_DStream_t* bitD);
+
+
+
+
+/******************************************
+*  unsafe API
+******************************************/
+MEM_STATIC size_t BIT_readBitsFast(BIT_DStream_t* bitD, unsigned nbBits);
+/* faster, but works only if nbBits >= 1 */
+
+
+
+/****************************************************************
+*  Helper functions
+****************************************************************/
+MEM_STATIC unsigned BIT_highbit32 (U32 val)
+{
+#   if defined(_MSC_VER)   /* Visual */
+    unsigned long r;
+    return _BitScanReverse(&r, val) ? (unsigned)r : 0;
+#   elif defined(__GNUC__) && (__GNUC__ >= 3)   /* Use GCC Intrinsic */
+    return __builtin_clz (val) ^ 31;
+#   else   /* Software version */
+    static const unsigned DeBruijnClz[32] = { 0, 9, 1, 10, 13, 21, 2, 29, 11, 14, 16, 18, 22, 25, 3, 30, 8, 12, 20, 28, 15, 17, 24, 7, 19, 27, 23, 6, 26, 5, 4, 31 };
+    U32 v = val;
+    unsigned r;
+    v |= v >> 1;
+    v |= v >> 2;
+    v |= v >> 4;
+    v |= v >> 8;
+    v |= v >> 16;
+    r = DeBruijnClz[ (U32) (v * 0x07C4ACDDU) >> 27];
+    return r;
+#   endif
+}
+
+
+/**********************************************************
+* bitStream decoding
+**********************************************************/
+
+/*!BIT_initDStream
+*  Initialize a BIT_DStream_t.
+*  @bitD : a pointer to an already allocated BIT_DStream_t structure
+*  @srcBuffer must point at the beginning of a bitStream
+*  @srcSize must be the exact size of the bitStream
+*  @result : size of stream (== srcSize) or an errorCode if a problem is detected
+*/
+MEM_STATIC size_t BIT_initDStream(BIT_DStream_t* bitD, const void* srcBuffer, size_t srcSize)
+{
+    if (srcSize < 1) { memset(bitD, 0, sizeof(*bitD)); return ERROR(srcSize_wrong); }
+
+    if (srcSize >=  sizeof(size_t))   /* normal case */
+    {
+        U32 contain32;
+        bitD->start = (const char*)srcBuffer;
+        bitD->ptr   = (const char*)srcBuffer + srcSize - sizeof(size_t);
+        bitD->bitContainer = MEM_readLEST(bitD->ptr);
+        contain32 = ((const BYTE*)srcBuffer)[srcSize-1];
+        if (contain32 == 0) return ERROR(GENERIC);   /* endMark not present */
+        bitD->bitsConsumed = 8 - BIT_highbit32(contain32);
+    }
+    else
+    {
+        U32 contain32;
+        bitD->start = (const char*)srcBuffer;
+        bitD->ptr   = bitD->start;
+        bitD->bitContainer = *(const BYTE*)(bitD->start);
+        switch(srcSize)
+        {
+            case 7: bitD->bitContainer += (size_t)(((const BYTE*)(bitD->start))[6]) << (sizeof(size_t)*8 - 16);/* fall-through */
+            case 6: bitD->bitContainer += (size_t)(((const BYTE*)(bitD->start))[5]) << (sizeof(size_t)*8 - 24);/* fall-through */
+            case 5: bitD->bitContainer += (size_t)(((const BYTE*)(bitD->start))[4]) << (sizeof(size_t)*8 - 32);/* fall-through */
+            case 4: bitD->bitContainer += (size_t)(((const BYTE*)(bitD->start))[3]) << 24; /* fall-through */
+            case 3: bitD->bitContainer += (size_t)(((const BYTE*)(bitD->start))[2]) << 16; /* fall-through */
+            case 2: bitD->bitContainer += (size_t)(((const BYTE*)(bitD->start))[1]) <<  8; /* fall-through */
+            default: break;
+        }
+        contain32 = ((const BYTE*)srcBuffer)[srcSize-1];
+        if (contain32 == 0) return ERROR(GENERIC);   /* endMark not present */
+        bitD->bitsConsumed = 8 - BIT_highbit32(contain32);
+        bitD->bitsConsumed += (U32)(sizeof(size_t) - srcSize)*8;
+    }
+
+    return srcSize;
+}
+
+MEM_STATIC size_t BIT_lookBits(BIT_DStream_t* bitD, U32 nbBits)
+{
+    const U32 bitMask = sizeof(bitD->bitContainer)*8 - 1;
+    return ((bitD->bitContainer << (bitD->bitsConsumed & bitMask)) >> 1) >> ((bitMask-nbBits) & bitMask);
+}
+
+/*! BIT_lookBitsFast :
+*   unsafe version; only works if nbBits >= 1 */
+MEM_STATIC size_t BIT_lookBitsFast(BIT_DStream_t* bitD, U32 nbBits)
+{
+    const U32 bitMask = sizeof(bitD->bitContainer)*8 - 1;
+    return (bitD->bitContainer << (bitD->bitsConsumed & bitMask)) >> (((bitMask+1)-nbBits) & bitMask);
+}
+
+MEM_STATIC void BIT_skipBits(BIT_DStream_t* bitD, U32 nbBits)
+{
+    bitD->bitsConsumed += nbBits;
+}
+
+MEM_STATIC size_t BIT_readBits(BIT_DStream_t* bitD, U32 nbBits)
+{
+    size_t value = BIT_lookBits(bitD, nbBits);
+    BIT_skipBits(bitD, nbBits);
+    return value;
+}
+
+/*!BIT_readBitsFast :
+*  unsafe version; only works if nbBits >= 1 */
+MEM_STATIC size_t BIT_readBitsFast(BIT_DStream_t* bitD, U32 nbBits)
+{
+    size_t value = BIT_lookBitsFast(bitD, nbBits);
+    BIT_skipBits(bitD, nbBits);
+    return value;
+}
+
+MEM_STATIC BIT_DStream_status BIT_reloadDStream(BIT_DStream_t* bitD)
+{
+    if (bitD->bitsConsumed > (sizeof(bitD->bitContainer)*8))  /* should never happen */
+        return BIT_DStream_overflow;
+
+    if (bitD->ptr >= bitD->start + sizeof(bitD->bitContainer))
+    {
+        bitD->ptr -= bitD->bitsConsumed >> 3;
+        bitD->bitsConsumed &= 7;
+        bitD->bitContainer = MEM_readLEST(bitD->ptr);
+        return BIT_DStream_unfinished;
+    }
+    if (bitD->ptr == bitD->start)
+    {
+        if (bitD->bitsConsumed < sizeof(bitD->bitContainer)*8) return BIT_DStream_endOfBuffer;
+        return BIT_DStream_completed;
+    }
+    {
+        U32 nbBytes = bitD->bitsConsumed >> 3;
+        BIT_DStream_status result = BIT_DStream_unfinished;
+        if (bitD->ptr - nbBytes < bitD->start)
+        {
+            nbBytes = (U32)(bitD->ptr - bitD->start);  /* ptr > start */
+            result = BIT_DStream_endOfBuffer;
+        }
+        bitD->ptr -= nbBytes;
+        bitD->bitsConsumed -= nbBytes*8;
+        bitD->bitContainer = MEM_readLEST(bitD->ptr);   /* reminder : srcSize > sizeof(bitD) */
+        return result;
+    }
+}
+
+/*! BIT_endOfDStream
+*   @return Tells if DStream has reached its exact end
+*/
+MEM_STATIC unsigned BIT_endOfDStream(const BIT_DStream_t* DStream)
+{
+    return ((DStream->ptr == DStream->start) && (DStream->bitsConsumed == sizeof(DStream->bitContainer)*8));
+}
+
+#if defined (__cplusplus)
+}
+#endif
+
+#endif /* BITSTREAM_H_MODULE */
+
+
+
+/* ******************************************************************
+   FSE : Finite State Entropy coder
+   header file for static linking (only)
+   Copyright (C) 2013-2015, Yann Collet
+
+   BSD 2-Clause License (https://opensource.org/licenses/bsd-license.php)
+
+   Redistribution and use in source and binary forms, with or without
+   modification, are permitted provided that the following conditions are
+   met:
+
+       * Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+       * Redistributions in binary form must reproduce the above
+   copyright notice, this list of conditions and the following disclaimer
+   in the documentation and/or other materials provided with the
+   distribution.
+
+   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+   A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+   OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+   LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+   DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+   THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+   You can contact the author at :
+   - Source repository : https://github.com/Cyan4973/FiniteStateEntropy
+   - Public forum : https://groups.google.com/forum/#!forum/lz4c
+****************************************************************** */
+#ifndef FSE_STATIC_H
+#define FSE_STATIC_H
+
+#if defined (__cplusplus)
+extern "C" {
+#endif
+
+
+/* *****************************************
+*  Static allocation
+*******************************************/
+/* FSE buffer bounds */
+#define FSE_NCOUNTBOUND 512
+#define FSE_BLOCKBOUND(size) (size + (size>>7))
+#define FSE_COMPRESSBOUND(size) (FSE_NCOUNTBOUND + FSE_BLOCKBOUND(size))   /* Macro version, useful for static allocation */
+
+/* It is possible to statically allocate FSE CTable/DTable as a table of unsigned using below macros */
+#define FSE_CTABLE_SIZE_U32(maxTableLog, maxSymbolValue)   (1 + (1<<(maxTableLog-1)) + ((maxSymbolValue+1)*2))
+#define FSE_DTABLE_SIZE_U32(maxTableLog)                   (1 + (1<<maxTableLog))
+
+
+/* *****************************************
+*  FSE advanced API
+*******************************************/
+static size_t FSE_buildDTable_raw (FSE_DTable* dt, unsigned nbBits);
+/* build a fake FSE_DTable, designed to read an uncompressed bitstream where each symbol uses nbBits */
+
+static size_t FSE_buildDTable_rle (FSE_DTable* dt, unsigned char symbolValue);
+/* build a fake FSE_DTable, designed to always generate the same symbolValue */
+
+
+
+/* *****************************************
+*  FSE symbol decompression API
+*******************************************/
+typedef struct
+{
+    size_t      state;
+    const void* table;   /* precise table may vary, depending on U16 */
+} FSE_DState_t;
+
+
+static void     FSE_initDState(FSE_DState_t* DStatePtr, BIT_DStream_t* bitD, const FSE_DTable* dt);
+
+static unsigned char FSE_decodeSymbol(FSE_DState_t* DStatePtr, BIT_DStream_t* bitD);
+
+static unsigned FSE_endOfDState(const FSE_DState_t* DStatePtr);
+
+
+/* *****************************************
+*  FSE unsafe API
+*******************************************/
+static unsigned char FSE_decodeSymbolFast(FSE_DState_t* DStatePtr, BIT_DStream_t* bitD);
+/* faster, but works only if nbBits is always >= 1 (otherwise, result will be corrupted) */
+
+
+/* *****************************************
+*  Implementation of inlined functions
+*******************************************/
+/* decompression */
+
+typedef struct {
+    U16 tableLog;
+    U16 fastMode;
+} FSE_DTableHeader;   /* sizeof U32 */
+
+typedef struct
+{
+    unsigned short newState;
+    unsigned char  symbol;
+    unsigned char  nbBits;
+} FSE_decode_t;   /* size == U32 */
+
+MEM_STATIC void FSE_initDState(FSE_DState_t* DStatePtr, BIT_DStream_t* bitD, const FSE_DTable* dt)
+{
+    FSE_DTableHeader DTableH;
+    memcpy(&DTableH, dt, sizeof(DTableH));
+    DStatePtr->state = BIT_readBits(bitD, DTableH.tableLog);
+    BIT_reloadDStream(bitD);
+    DStatePtr->table = dt + 1;
+}
+
+MEM_STATIC BYTE FSE_decodeSymbol(FSE_DState_t* DStatePtr, BIT_DStream_t* bitD)
+{
+    const FSE_decode_t DInfo = ((const FSE_decode_t*)(DStatePtr->table))[DStatePtr->state];
+    const U32  nbBits = DInfo.nbBits;
+    BYTE symbol = DInfo.symbol;
+    size_t lowBits = BIT_readBits(bitD, nbBits);
+
+    DStatePtr->state = DInfo.newState + lowBits;
+    return symbol;
+}
+
+MEM_STATIC BYTE FSE_decodeSymbolFast(FSE_DState_t* DStatePtr, BIT_DStream_t* bitD)
+{
+    const FSE_decode_t DInfo = ((const FSE_decode_t*)(DStatePtr->table))[DStatePtr->state];
+    const U32 nbBits = DInfo.nbBits;
+    BYTE symbol = DInfo.symbol;
+    size_t lowBits = BIT_readBitsFast(bitD, nbBits);
+
+    DStatePtr->state = DInfo.newState + lowBits;
+    return symbol;
+}
+
+MEM_STATIC unsigned FSE_endOfDState(const FSE_DState_t* DStatePtr)
+{
+    return DStatePtr->state == 0;
+}
+
+
+#if defined (__cplusplus)
+}
+#endif
+
+#endif  /* FSE_STATIC_H */
+
+/* ******************************************************************
+   FSE : Finite State Entropy coder
+   Copyright (C) 2013-2015, Yann Collet.
+
+   BSD 2-Clause License (https://opensource.org/licenses/bsd-license.php)
+
+   Redistribution and use in source and binary forms, with or without
+   modification, are permitted provided that the following conditions are
+   met:
+
+       * Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+       * Redistributions in binary form must reproduce the above
+   copyright notice, this list of conditions and the following disclaimer
+   in the documentation and/or other materials provided with the
+   distribution.
+
+   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+   A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+   OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+   LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+   DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+   THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+    You can contact the author at :
+    - FSE source repository : https://github.com/Cyan4973/FiniteStateEntropy
+    - Public forum : https://groups.google.com/forum/#!forum/lz4c
+****************************************************************** */
+
+#ifndef FSE_COMMONDEFS_ONLY
+
+/* **************************************************************
+*  Tuning parameters
+****************************************************************/
+/*!MEMORY_USAGE :
+*  Memory usage formula : N->2^N Bytes (examples : 10 -> 1KB; 12 -> 4KB ; 16 -> 64KB; 20 -> 1MB; etc.)
+*  Increasing memory usage improves compression ratio
+*  Reduced memory usage can improve speed, due to cache effect
+*  Recommended max value is 14, for 16KB, which nicely fits into Intel x86 L1 cache */
+#define FSE_MAX_MEMORY_USAGE 14
+#define FSE_DEFAULT_MEMORY_USAGE 13
+
+/*!FSE_MAX_SYMBOL_VALUE :
+*  Maximum symbol value authorized.
+*  Required for proper stack allocation */
+#define FSE_MAX_SYMBOL_VALUE 255
+
+
+/* **************************************************************
+*  template functions type & suffix
+****************************************************************/
+#define FSE_FUNCTION_TYPE BYTE
+#define FSE_FUNCTION_EXTENSION
+#define FSE_DECODE_TYPE FSE_decode_t
+
+
+#endif   /* !FSE_COMMONDEFS_ONLY */
+
+/* **************************************************************
+*  Compiler specifics
+****************************************************************/
+#ifdef _MSC_VER    /* Visual Studio */
+#  define FORCE_INLINE static __forceinline
+#  include <intrin.h>                    /* For Visual 2005 */
+#  pragma warning(disable : 4127)        /* disable: C4127: conditional expression is constant */
+#  pragma warning(disable : 4214)        /* disable: C4214: non-int bitfields */
+#else
+#  if defined (__cplusplus) || defined (__STDC_VERSION__) && __STDC_VERSION__ >= 199901L   /* C99 */
+#    ifdef __GNUC__
+#      define FORCE_INLINE static inline __attribute__((always_inline))
+#    else
+#      define FORCE_INLINE static inline
+#    endif
+#  else
+#    define FORCE_INLINE static
+#  endif /* __STDC_VERSION__ */
+#endif
+
+
+/* **************************************************************
+*  Dependencies
+****************************************************************/
+#include <stdlib.h>     /* malloc, free, qsort */
+#include <string.h>     /* memcpy, memset */
+#include <stdio.h>      /* printf (debug) */
+
+
+/* ***************************************************************
+*  Constants
+*****************************************************************/
+#define FSE_MAX_TABLELOG  (FSE_MAX_MEMORY_USAGE-2)
+#define FSE_MAX_TABLESIZE (1U<<FSE_MAX_TABLELOG)
+#define FSE_MAXTABLESIZE_MASK (FSE_MAX_TABLESIZE-1)
+#define FSE_DEFAULT_TABLELOG (FSE_DEFAULT_MEMORY_USAGE-2)
+#define FSE_MIN_TABLELOG 5
+
+#define FSE_TABLELOG_ABSOLUTE_MAX 15
+#if FSE_MAX_TABLELOG > FSE_TABLELOG_ABSOLUTE_MAX
+#error "FSE_MAX_TABLELOG > FSE_TABLELOG_ABSOLUTE_MAX is not supported"
+#endif
+
+
+/* **************************************************************
+*  Error Management
+****************************************************************/
+#define FSE_STATIC_ASSERT(c) { enum { FSE_static_assert = 1/(int)(!!(c)) }; }   /* use only *after* variable declarations */
+
+
+/* **************************************************************
+*  Complex types
+****************************************************************/
+typedef U32 DTable_max_t[FSE_DTABLE_SIZE_U32(FSE_MAX_TABLELOG)];
+
+
+/*-**************************************************************
+*  Templates
+****************************************************************/
+/*
+  designed to be included
+  for type-specific functions (template emulation in C)
+  Objective is to write these functions only once, for improved maintenance
+*/
+
+/* safety checks */
+#ifndef FSE_FUNCTION_EXTENSION
+#  error "FSE_FUNCTION_EXTENSION must be defined"
+#endif
+#ifndef FSE_FUNCTION_TYPE
+#  error "FSE_FUNCTION_TYPE must be defined"
+#endif
+
+/* Function names */
+#define FSE_CAT(X,Y) X##Y
+#define FSE_FUNCTION_NAME(X,Y) FSE_CAT(X,Y)
+#define FSE_TYPE_NAME(X,Y) FSE_CAT(X,Y)
+
+static U32 FSE_tableStep(U32 tableSize) { return (tableSize>>1) + (tableSize>>3) + 3; }
+
+
+static size_t FSE_buildDTable(FSE_DTable* dt, const short* normalizedCounter, unsigned maxSymbolValue, unsigned tableLog)
+{
+    FSE_DTableHeader DTableH;
+    void* const tdPtr = dt+1;   /* because dt is unsigned, 32-bits aligned on 32-bits */
+    FSE_DECODE_TYPE* const tableDecode = (FSE_DECODE_TYPE*) (tdPtr);
+    const U32 tableSize = 1 << tableLog;
+    const U32 tableMask = tableSize-1;
+    const U32 step = FSE_tableStep(tableSize);
+    U16 symbolNext[FSE_MAX_SYMBOL_VALUE+1];
+    U32 position = 0;
+    U32 highThreshold = tableSize-1;
+    const S16 largeLimit= (S16)(1 << (tableLog-1));
+    U32 noLarge = 1;
+    U32 s;
+
+    /* Sanity Checks */
+    if (maxSymbolValue > FSE_MAX_SYMBOL_VALUE) return ERROR(maxSymbolValue_tooLarge);
+    if (tableLog > FSE_MAX_TABLELOG) return ERROR(tableLog_tooLarge);
+
+    /* Init, lay down lowprob symbols */
+    memset(tableDecode, 0, sizeof(FSE_DECODE_TYPE) * (maxSymbolValue+1) );   /* useless init, but keep static analyzer happy, and we don't need to performance optimize legacy decoders */
+    DTableH.tableLog = (U16)tableLog;
+    for (s=0; s<=maxSymbolValue; s++)
+    {
+        if (normalizedCounter[s]==-1)
+        {
+            tableDecode[highThreshold--].symbol = (FSE_FUNCTION_TYPE)s;
+            symbolNext[s] = 1;
+        }
+        else
+        {
+            if (normalizedCounter[s] >= largeLimit) noLarge=0;
+            symbolNext[s] = normalizedCounter[s];
+        }
+    }
+
+    /* Spread symbols */
+    for (s=0; s<=maxSymbolValue; s++)
+    {
+        int i;
+        for (i=0; i<normalizedCounter[s]; i++)
+        {
+            tableDecode[position].symbol = (FSE_FUNCTION_TYPE)s;
+            position = (position + step) & tableMask;
+            while (position > highThreshold) position = (position + step) & tableMask;   /* lowprob area */
+        }
+    }
+
+    if (position!=0) return ERROR(GENERIC);   /* position must reach all cells once, otherwise normalizedCounter is incorrect */
+
+    /* Build Decoding table */
+    {
+        U32 i;
+        for (i=0; i<tableSize; i++)
+        {
+            FSE_FUNCTION_TYPE symbol = (FSE_FUNCTION_TYPE)(tableDecode[i].symbol);
+            U16 nextState = symbolNext[symbol]++;
+            tableDecode[i].nbBits = (BYTE) (tableLog - BIT_highbit32 ((U32)nextState) );
+            tableDecode[i].newState = (U16) ( (nextState << tableDecode[i].nbBits) - tableSize);
+        }
+    }
+
+    DTableH.fastMode = (U16)noLarge;
+    memcpy(dt, &DTableH, sizeof(DTableH));
+    return 0;
+}
+
+
+#ifndef FSE_COMMONDEFS_ONLY
+/******************************************
+*  FSE helper functions
+******************************************/
+static unsigned FSE_isError(size_t code) { return ERR_isError(code); }
+
+
+/****************************************************************
+*  FSE NCount encoding-decoding
+****************************************************************/
+static short FSE_abs(short a)
+{
+    return a<0 ? -a : a;
+}
+
+static size_t FSE_readNCount (short* normalizedCounter, unsigned* maxSVPtr, unsigned* tableLogPtr,
+                 const void* headerBuffer, size_t hbSize)
+{
+    const BYTE* const istart = (const BYTE*) headerBuffer;
+    const BYTE* const iend = istart + hbSize;
+    const BYTE* ip = istart;
+    int nbBits;
+    int remaining;
+    int threshold;
+    U32 bitStream;
+    int bitCount;
+    unsigned charnum = 0;
+    int previous0 = 0;
+
+    if (hbSize < 4) return ERROR(srcSize_wrong);
+    bitStream = MEM_readLE32(ip);
+    nbBits = (bitStream & 0xF) + FSE_MIN_TABLELOG;   /* extract tableLog */
+    if (nbBits > FSE_TABLELOG_ABSOLUTE_MAX) return ERROR(tableLog_tooLarge);
+    bitStream >>= 4;
+    bitCount = 4;
+    *tableLogPtr = nbBits;
+    remaining = (1<<nbBits)+1;
+    threshold = 1<<nbBits;
+    nbBits++;
+
+    while ((remaining>1) && (charnum<=*maxSVPtr))
+    {
+        if (previous0)
+        {
+            unsigned n0 = charnum;
+            while ((bitStream & 0xFFFF) == 0xFFFF)
+            {
+                n0+=24;
+                if (ip < iend-5)
+                {
+                    ip+=2;
+                    bitStream = MEM_readLE32(ip) >> bitCount;
+                }
+                else
+                {
+                    bitStream >>= 16;
+                    bitCount+=16;
+                }
+            }
+            while ((bitStream & 3) == 3)
+            {
+                n0+=3;
+                bitStream>>=2;
+                bitCount+=2;
+            }
+            n0 += bitStream & 3;
+            bitCount += 2;
+            if (n0 > *maxSVPtr) return ERROR(maxSymbolValue_tooSmall);
+            while (charnum < n0) normalizedCounter[charnum++] = 0;
+            if ((ip <= iend-7) || (ip + (bitCount>>3) <= iend-4))
+            {
+                ip += bitCount>>3;
+                bitCount &= 7;
+                bitStream = MEM_readLE32(ip) >> bitCount;
+            }
+            else
+                bitStream >>= 2;
+        }
+        {
+            const short max = (short)((2*threshold-1)-remaining);
+            short count;
+
+            if ((bitStream & (threshold-1)) < (U32)max)
+            {
+                count = (short)(bitStream & (threshold-1));
+                bitCount   += nbBits-1;
+            }
+            else
+            {
+                count = (short)(bitStream & (2*threshold-1));
+                if (count >= threshold) count -= max;
+                bitCount   += nbBits;
+            }
+
+            count--;   /* extra accuracy */
+            remaining -= FSE_abs(count);
+            normalizedCounter[charnum++] = count;
+            previous0 = !count;
+            while (remaining < threshold)
+            {
+                nbBits--;
+                threshold >>= 1;
+            }
+
+            {
+                if ((ip <= iend-7) || (ip + (bitCount>>3) <= iend-4))
+                {
+                    ip += bitCount>>3;
+                    bitCount &= 7;
+                }
+                else
+                {
+                    bitCount -= (int)(8 * (iend - 4 - ip));
+                    ip = iend - 4;
+                }
+                bitStream = MEM_readLE32(ip) >> (bitCount & 31);
+            }
+        }
+    }
+    if (remaining != 1) return ERROR(GENERIC);
+    *maxSVPtr = charnum-1;
+
+    ip += (bitCount+7)>>3;
+    if ((size_t)(ip-istart) > hbSize) return ERROR(srcSize_wrong);
+    return ip-istart;
+}
+
+
+/*********************************************************
+*  Decompression (Byte symbols)
+*********************************************************/
+static size_t FSE_buildDTable_rle (FSE_DTable* dt, BYTE symbolValue)
+{
+    void* ptr = dt;
+    FSE_DTableHeader* const DTableH = (FSE_DTableHeader*)ptr;
+    void* dPtr = dt + 1;
+    FSE_decode_t* const cell = (FSE_decode_t*)dPtr;
+
+    DTableH->tableLog = 0;
+    DTableH->fastMode = 0;
+
+    cell->newState = 0;
+    cell->symbol = symbolValue;
+    cell->nbBits = 0;
+
+    return 0;
+}
+
+
+static size_t FSE_buildDTable_raw (FSE_DTable* dt, unsigned nbBits)
+{
+    void* ptr = dt;
+    FSE_DTableHeader* const DTableH = (FSE_DTableHeader*)ptr;
+    void* dPtr = dt + 1;
+    FSE_decode_t* const dinfo = (FSE_decode_t*)dPtr;
+    const unsigned tableSize = 1 << nbBits;
+    const unsigned tableMask = tableSize - 1;
+    const unsigned maxSymbolValue = tableMask;
+    unsigned s;
+
+    /* Sanity checks */
+    if (nbBits < 1) return ERROR(GENERIC);         /* min size */
+
+    /* Build Decoding Table */
+    DTableH->tableLog = (U16)nbBits;
+    DTableH->fastMode = 1;
+    for (s=0; s<=maxSymbolValue; s++)
+    {
+        dinfo[s].newState = 0;
+        dinfo[s].symbol = (BYTE)s;
+        dinfo[s].nbBits = (BYTE)nbBits;
+    }
+
+    return 0;
+}
+
+FORCE_INLINE size_t FSE_decompress_usingDTable_generic(
+          void* dst, size_t maxDstSize,
+    const void* cSrc, size_t cSrcSize,
+    const FSE_DTable* dt, const unsigned fast)
+{
+    BYTE* const ostart = (BYTE*) dst;
+    BYTE* op = ostart;
+    BYTE* const omax = op + maxDstSize;
+    BYTE* const olimit = omax-3;
+
+    BIT_DStream_t bitD;
+    FSE_DState_t state1;
+    FSE_DState_t state2;
+    size_t errorCode;
+
+    /* Init */
+    errorCode = BIT_initDStream(&bitD, cSrc, cSrcSize);   /* replaced last arg by maxCompressed Size */
+    if (FSE_isError(errorCode)) return errorCode;
+
+    FSE_initDState(&state1, &bitD, dt);
+    FSE_initDState(&state2, &bitD, dt);
+
+#define FSE_GETSYMBOL(statePtr) fast ? FSE_decodeSymbolFast(statePtr, &bitD) : FSE_decodeSymbol(statePtr, &bitD)
+
+    /* 4 symbols per loop */
+    for ( ; (BIT_reloadDStream(&bitD)==BIT_DStream_unfinished) && (op<olimit) ; op+=4)
+    {
+        op[0] = FSE_GETSYMBOL(&state1);
+
+        if (FSE_MAX_TABLELOG*2+7 > sizeof(bitD.bitContainer)*8)    /* This test must be static */
+            BIT_reloadDStream(&bitD);
+
+        op[1] = FSE_GETSYMBOL(&state2);
+
+        if (FSE_MAX_TABLELOG*4+7 > sizeof(bitD.bitContainer)*8)    /* This test must be static */
+            { if (BIT_reloadDStream(&bitD) > BIT_DStream_unfinished) { op+=2; break; } }
+
+        op[2] = FSE_GETSYMBOL(&state1);
+
+        if (FSE_MAX_TABLELOG*2+7 > sizeof(bitD.bitContainer)*8)    /* This test must be static */
+            BIT_reloadDStream(&bitD);
+
+        op[3] = FSE_GETSYMBOL(&state2);
+    }
+
+    /* tail */
+    /* note : BIT_reloadDStream(&bitD) >= FSE_DStream_partiallyFilled; Ends at exactly BIT_DStream_completed */
+    while (1)
+    {
+        if ( (BIT_reloadDStream(&bitD)>BIT_DStream_completed) || (op==omax) || (BIT_endOfDStream(&bitD) && (fast || FSE_endOfDState(&state1))) )
+            break;
+
+        *op++ = FSE_GETSYMBOL(&state1);
+
+        if ( (BIT_reloadDStream(&bitD)>BIT_DStream_completed) || (op==omax) || (BIT_endOfDStream(&bitD) && (fast || FSE_endOfDState(&state2))) )
+            break;
+
+        *op++ = FSE_GETSYMBOL(&state2);
+    }
+
+    /* end ? */
+    if (BIT_endOfDStream(&bitD) && FSE_endOfDState(&state1) && FSE_endOfDSta

@@ -23,6 +23,8 @@ OUT = "/logs/verifier"
 EVIDENCE = f"{OUT}/evidence.json"
 TESTS = os.path.dirname(os.path.abspath(__file__))
 CASES = f"{TESTS}/cases"
+ENCODE = f"{TESTS}/encode"
+REFDEC = f"{TESTS}/refdec"     # strict decoder that checks encoder output
 SRC = "/app/zstdr"
 WORK = "/tmp/zgrade"
 RUN_UID = 64011
@@ -50,6 +52,8 @@ ev = {
     "gates": {},
     "cases_total": 0,
     "results": [],
+    "enc_cases_total": 0,
+    "enc_results": [],
 }
 
 
@@ -73,6 +77,17 @@ def drop_privileges():
     os.setgroups([])
     os.setgid(RUN_GID)
     os.setuid(RUN_UID)
+    for lim, val in ((resource.RLIMIT_AS, 4 << 30), (resource.RLIMIT_CPU, 60),
+                     (resource.RLIMIT_FSIZE, 1 << 30), (resource.RLIMIT_CORE, 0)):
+        try:
+            resource.setrlimit(lim, (val, val))
+        except (ValueError, OSError):
+            pass
+
+
+def limits_only():
+    """Resource limits for the root-run reference decoder."""
+    os.setsid()
     for lim, val in ((resource.RLIMIT_AS, 4 << 30), (resource.RLIMIT_CPU, 60),
                      (resource.RLIMIT_FSIZE, 1 << 30), (resource.RLIMIT_CORE, 0)):
         try:
@@ -180,6 +195,33 @@ def read_output(path, expected_size, expected_sha):
         if h.hexdigest() != expected_sha:
             return False, "output differs (same size, different content)"
         return True, "match"
+    finally:
+        os.close(fd)
+
+
+def read_bounded(path, limit):
+    """Read a candidate-written file without following symlinks, without
+    blocking on FIFOs and without reading more than `limit` bytes."""
+    try:
+        fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK | os.O_NOCTTY)
+    except OSError as e:
+        return None, f"no readable output ({e.strerror})"
+    try:
+        st = os.fstat(fd)
+        if not stat.S_ISREG(st.st_mode):
+            return None, "output is not a regular file"
+        if st.st_size > limit:
+            return None, f"output of {st.st_size} bytes exceeds {limit}"
+        chunks, remaining = [], st.st_size
+        while remaining > 0:
+            chunk = os.read(fd, min(1 << 20, remaining))
+            if not chunk:
+                break
+            chunks.append(chunk)
+            remaining -= len(chunk)
+        if remaining != 0 or os.read(fd, 1):
+            return None, "output changed size while being read"
+        return b"".join(chunks), ""
     finally:
         os.close(fd)
 
@@ -431,8 +473,68 @@ def run_case(binary, case, case_dir, out_dir):
             "pass": bool(ok), "detail": why, "secs": round(elapsed, 3)}
 
 
+def run_enc_case(binary, refdec, case, in_dir, out_dir, chk_dir):
+    """Compress one input with the candidate, then decode the result with
+    the reference decoder; record the compressed size when it round-trips."""
+    cid = case["id"]
+    out_path, chk, dec = f"{out_dir}/{cid}.zst", f"{chk_dir}/{cid}.zst", f"{chk_dir}/{cid}.dec"
+    res = {"id": cid, "category": case["category"], "stored_size": case["stored_size"],
+           "baseline_size": case["baseline_size"], "reference_size": case["reference_size"],
+           "ok": False, "size": None, "detail": "", "secs": 0.0}
+    t0 = time.monotonic()
+    try:
+        rc, log, _ = run_limited([binary, "-z", f"{in_dir}/{cid}.bin", out_path], CASE_TIMEOUT,
+                                 drop_privileges, cwd=out_dir,
+                                 env={"PATH": "/nonexistent", "HOME": out_dir, "LC_ALL": "C"})
+    except OSError as e:
+        rc, log = -1, f"could not start encoder ({e.strerror})"
+    res["secs"] = round(time.monotonic() - t0, 3)
+    if rc is None:
+        res["detail"] = "timeout"
+    elif rc != 0:
+        res["detail"] = f"exit {rc}: {log.strip()[-120:]}"
+    else:
+        data, why = read_bounded(out_path, 2 * case["size"] + 65536)
+        if data is None:
+            res["detail"] = why
+        else:
+            with open(chk, "wb") as f:
+                f.write(data)
+            rc2, log2, _ = run_limited([refdec, chk, dec], CASE_TIMEOUT, limits_only, cwd=chk_dir,
+                                       env={"PATH": "/nonexistent", "LC_ALL": "C"})
+            if rc2 != 0:
+                res["detail"] = f"reference decoder rejects the output: {log2.strip()[-120:]}"
+            else:
+                ok, why = read_output(dec, case["size"], case["sha256"])
+                res["ok"], res["detail"] = ok, why
+                if ok:
+                    res["size"] = len(data)
+    for path in (out_path, chk, dec):
+        try:
+            os.remove(path)
+        except OSError:
+            pass
+    return res
+
+
+def build_refdec(env):
+    """Build the reference decoder from the sealed source, as root."""
+    src, target = f"{WORK}/refdec-src", f"{WORK}/refdec-target"
+    shutil.copytree(REFDEC, src)
+    renv = dict(env, HOME=f"{WORK}/refdec-home", CARGO_HOME=f"{WORK}/refdec-cargo",
+                CARGO_TARGET_DIR=target)
+    rc, log, _ = run_limited(["cargo", "build", "--release", "--offline"], BUILD_TIMEOUT, None,
+                             cwd=src, env=renv)
+    path = f"{target}/release/zstdr-refdec"
+    if rc != 0 or not os.path.isfile(path):
+        raise RuntimeError(f"reference decoder build failed: {log[-600:]}")
+    return path
+
+
 def main():
     manifest = json.load(open(f"{CASES}/manifest.json"))["cases"]
+    enc_manifest = json.load(open(f"{ENCODE}/manifest.json"))["cases"]
+    ev["enc_cases_total"] = len(enc_manifest)
     ev["cases_total"] = len(manifest)
     ev["categories"] = sorted({c["category"] for c in manifest})
     write_evidence()
@@ -488,9 +590,13 @@ def main():
            "CARGO_NET_OFFLINE": "true", "LC_ALL": "C",
            # Overrides any rust-toolchain file in the package or its ancestors.
            "RUSTUP_TOOLCHAIN": default_toolchain()}
+    refdec = None
     try:
         rc, log, _ = run_limited(["cargo", "build", "--release", "--offline", "--bin", "zstdr"],
                                  BUILD_TIMEOUT, drop_privileges_build, cwd=f"{WORK}/src", env=env)
+        kill_run_user()
+        if rc == 0:
+            refdec = build_refdec(env)
     finally:
         kill_run_user()
         for aside, anc in displaced:
@@ -526,10 +632,31 @@ def main():
     os.chmod(final_bin, 0o755)
     os.chown(out_dir, RUN_UID, RUN_GID)
 
+    # Encoder inputs, with their hashes taken from the sealed copies.
+    enc_in = f"{WORK}/enc-inputs"
+    os.makedirs(enc_in)
+    for c in enc_manifest:
+        shutil.copy(f"{ENCODE}/inputs/{c['id']}.bin", enc_in)
+        with open(f"{ENCODE}/inputs/{c['id']}.bin", "rb") as f:
+            blob = f.read()
+        if len(blob) != c["size"]:
+            raise RuntimeError(f"encoder input {c['id']} does not match its manifest size")
+        c["sha256"] = hashlib.sha256(blob).hexdigest()
+    subprocess.run(["chown", "-R", "root:root", enc_in], check=True)
+    subprocess.run(["chmod", "-R", "a+rX,go-w", enc_in], check=True)
+    enc_out, enc_chk = f"{WORK}/enc-out", f"{WORK}/enc-check"
+    os.makedirs(enc_out)
+    os.makedirs(enc_chk, mode=0o700)
+    os.chown(enc_out, RUN_UID, RUN_GID)
+
     hidden = hide_libzstd()
     try:
         with ThreadPoolExecutor(WORKERS) as ex:
             ev["results"] = list(ex.map(lambda c: run_case(final_bin, c, case_dir, out_dir), manifest))
+        kill_run_user()
+        with ThreadPoolExecutor(WORKERS) as ex:
+            ev["enc_results"] = list(ex.map(
+                lambda c: run_enc_case(final_bin, refdec, c, enc_in, enc_out, enc_chk), enc_manifest))
     finally:
         kill_run_user()
         for path, mode in hidden:

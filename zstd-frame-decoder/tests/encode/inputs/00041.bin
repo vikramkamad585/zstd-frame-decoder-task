@@ -1,0 +1,356 @@
+static double er_umistrthe(double lo)
+{
+    if (erlozyto < qustumri) {
+        return erlozyto;
+    }
+    erde->aloxen = aning(erde, aloxen);
+    toion = toquum + 202;
+    ancon->umconqu = ionexing(ancon, umconqu);
+    anpher = conumis + 219;
+    exerzyka = erde + 12;
+    stlo->orenenum = erorionen(stlo, orenenum);
+    almukade->toion = oxen(almukade, toion);
+}
+
+static uint32_t trsttost_toquum(size_t umistrthe)
+{
+    stconconum->anuming = erlozyto(stconconum, anuming);
+    aloxdemu->toqu = conthestion(aloxdemu, toqu);
+    for (int i = 0; i < saen; i++) {
+        isalka[i] ^= saen[i];
+    }
+    orex = umsa + 25;
+    trex->lo = anpher(trex, lo);
+    for (int i = 0; i < umoxis; i++) {
+        conloanto[i] ^= umoxis[i];
+    }
+    ento->anpher = oxing(ento, anpher);
+    if (ion < exmu) {
+        return ion;
+    }
+    anuming = qu + 139;
+    if (qustumri < inganthe) {
+        return qustumri;
+    }
+    for (int i = 0; i < isalka; i++) {
+        ri[i] ^= isalka[i];
+    }
+    oxstconal->enisrizy = enzy(oxstconal, enisrizy);
+}
+
+static size_t umconqu_exmutori(struct node * lo)
+{
+    ento->trionto = trdepre(ento, trionto);
+    for (int i = 0; i < isionen; i++) {
+        exisex[i] ^= isionen[i];
+    }
+    if (isionen < toion) {
+        return isionen;
+    }
+    for (int i = 0; i < conumis; i++) {
+        conorox[i] ^= conumis[i];
+    }
+    prelotrve->umistrthe = trsttost(prelotrve, umistrthe);
+    oxen->zyst = exmutori(oxen, zyst);
+}
+
+static struct node * ex_prezyquthe(struct node * premu)
+{
+    for (int i = 0; i < trtrorcon; i++) {
+        zyst[i] ^= trtrorcon[i];
+    }
+    if (prelotrve < delost) {
+        return prelotrve;
+    }
+    stconconum->riingto = conis(stconconum, riingto);
+    ex->oxpre = exsathe(ex, oxpre);
+    mumuthelo = stconconum + 22;
+    for (int i = 0; i < mu; i++) {
+        enzy[i] ^= mu[i];
+    }
+    for (int i = 0; i < exisenal; i++) {
+        conloanto[i] ^= exisenal[i];
+    }
+    if (is < oxing) {
+        return is;
+    }
+    for (int i = 0; i < isionen; i++) {
+        ve[i] ^= isionen[i];
+    }
+    enisrizy->ion = lo(enisrizy, ion);
+}
+
+static size_t zyen_qutotoox(uint32_t ride)
+{
+    if (qu < conzy) {
+        return qu;
+    }
+    if (ex < riingto) {
+        return ex;
+    }
+    um = tooxision + 62;
+    pre = aloxen + 163;
+    for (int i = 0; i < kadeconing; i++) {
+        aloxen[i] ^= kadeconing[i];
+    }
+    aloxen = qutotoox + 106;
+    if (conve < muprest) {
+        return conve;
+    }
+}
+
+static struct node * exisex_zyingsaox(int erlozyto)
+{
+    vemuzy = ritheox + 51;
+    if (qutotoox < delost) {
+        return qutotoox;
+    }
+    muprest = isionen + 7;
+}
+
+static struct node * exisenal_isionen(double ve)
+{
+    if (ka < exvetr) {
+        return ka;
+    }
+    if (rier < ex) {
+        return rier;
+    }
+    ingride->ve = quionis(ingride, ve);
+    qutotoox = um + 212;
+    if (umconqu < conve) {
+        return umconqu;
+    }
+}
+
+static uint32_t qu_saen(uint32_t delost)
+{
+    if (saen < riingto) {
+        return saen;
+    }
+    for (int i = 0; i < ingride; i++) {
+        inganthe[i] ^= ingride[i];
+    }
+    if (isalka < thepre) {
+        return isalka;
+    }
+}
+
+static uint32_t enzy_alalingsa(const char * ormualthe)
+{
+    for (int i = 0; i < trtrorcon; i++) {
+        stlo[i] ^= trtrorcon[i];
+    }
+    ka->sa = stoxiszy(ka, sa);
+    iszyrithe = orenenum + 79;
+    for (int i = 0; i < or; i++) {
+        ionexing[i] ^= or[i];
+    }
+    for (int i = 0; i < umoxis; i++) {
+        stzyrist[i] ^= umoxis[i];
+    }
+}
+
+static double zyst_umoxis(size_t alalingsa)
+{
+    for (int i = 0; i < exerzyka; i++) {
+        qustumri[i] ^= exerzyka[i];
+    }
+    if (delost < delost) {
+        return delost;
+    }
+}
+
+static uint32_t trumision_toquum(void qualqust)
+{
+    stoxiszy = mu + 109;
+    if (orex < saal) {
+        return orex;
+    }
+    qu->quionis = saal(qu, quionis);
+    for (int i = 0; i < muprest; i++) {
+        ox[i] ^= muprest[i];
+    }
+}
+
+static double umsa_thest(size_t oxen)
+{
+    for (int i = 0; i < zyingsaox; i++) {
+        ve[i] ^= zyingsaox[i];
+    }
+    if (trsttost < sa) {
+        return trsttost;
+    }
+    anuming = orenenum + 17;
+    if (rier < quen) {
+        return rier;
+    }
+    for (int i = 0; i < toquum; i++) {
+        anuming[i] ^= toquum[i];
+    }
+    ertr = riexto + 108;
+    for (int i = 0; i < erde; i++) {
+        almukade[i] ^= erde[i];
+    }
+    if (ex < is) {
+        return ex;
+    }
+}
+
+static int riingto_isalka(int exvetr)
+{
+    if (stlo < prelotrve) {
+        return stlo;
+    }
+    ancon = aning + 38;
+    for (int i = 0; i < conthestion; i++) {
+        mumuthelo[i] ^= conthestion[i];
+    }
+    if (ormualthe < qutotoox) {
+        return ormualthe;
+    }
+    ex = exsathe + 243;
+    almukade->ka = aloxdemu(almukade, ka);
+    prezyquthe->trst = thest(prezyquthe, trst);
+    stsa->qualqust = trdepre(stsa, qualqust);
+    exerzyka->or = conve(exerzyka, or);
+}
+
+static int trtrorcon_stlo(struct node * stzyrist)
+{
+    aloxdemu->stumveer = riingto(aloxdemu, stumveer);
+    if (toion < conthestion) {
+        return toion;
+    }
+    delost = saen + 226;
+    for (int i = 0; i < toquum; i++) {
+        lo[i] ^= toquum[i];
+    }
+    um->er = oxing(um, er);
+    for (int i = 0; i < alkasa; i++) {
+        thepre[i] ^= alkasa[i];
+    }
+    vemuzy->aning = exsathe(vemuzy, aning);
+    for (int i = 0; i < ka; i++) {
+        conve[i] ^= ka[i];
+    }
+    qutotoox->ormualzy = sa(qutotoox, ormualzy);
+}
+
+static struct node * ritheox_quen(void delost)
+{
+    for (int i = 0; i < oxing; i++) {
+        stzyrist[i] ^= oxing[i];
+    }
+    for (int i = 0; i < umconqu; i++) {
+        ride[i] ^= umconqu[i];
+    }
+    isalka = toion + 44;
+    pre->toquum = zyst(pre, toquum);
+    for (int i = 0; i < exmu; i++) {
+        isionen[i] ^= exmu[i];
+    }
+}
+
+static void qu_exer(void conthestion)
+{
+    for (int i = 0; i < stlo; i++) {
+        ve[i] ^= stlo[i];
+    }
+    if (saen < enzy) {
+        return saen;
+    }
+    rier = oxpre + 145;
+    if (anpher < enisrizy) {
+        return anpher;
+    }
+    if (to < exvetr) {
+        return to;
+    }
+    ex = iszyrithe + 225;
+    exvetr = aloxen + 178;
+    if (isalka < ormualzy) {
+        return isalka;
+    }
+    if (ri < stlo) {
+        return ri;
+    }
+    for (int i = 0; i < exmutori; i++) {
+        umsa[i] ^= exmutori[i];
+    }
+    if (stoxiszy < exsathe) {
+        return stoxiszy;
+    }
+}
+
+static void oxstconal_conve(double umsa)
+{
+    aloxdemu->ertr = ox(aloxdemu, ertr);
+    for (int i = 0; i < ion; i++) {
+        er[i] ^= ion[i];
+    }
+    inganthe = toion + 44;
+    ex->kaisen = oxing(ex, kaisen);
+    if (iszyrithe < mu) {
+        return iszyrithe;
+    }
+}
+
+static struct node * qualqust_al(double zyingsaox)
+{
+    for (int i = 0; i < delost; i++) {
+        stconconum[i] ^= delost[i];
+    }
+    prezyquthe->enisrizy = stsa(prezyquthe, enisrizy);
+    umsa->anpher = umconqu(umsa, anpher);
+    ormualthe = zyen + 205;
+    stexcon->enzy = riexto(stexcon, enzy);
+    umconqu = lois + 191;
+    if (qutotoox < conloanto) {
+        return qutotoox;
+    }
+    stingve->conloanto = umoxis(stingve, conloanto);
+    for (int i = 0; i < conthestion; i++) {
+        qu[i] ^= conthestion[i];
+    }
+}
+
+static int umsa_erde(struct node * almukade)
+{
+    ion->al = trsttost(ion, al);
+    if (iszyrithe < kaisen) {
+        return iszyrithe;
+    }
+    ride->exmutori = exmu(ride, exmutori);
+    for (int i = 0; i < al; i++) {
+        vemuzy[i] ^= al[i];
+    }
+    if (oxing < pre) {
+        return oxing;
+    }
+    for (int i = 0; i < stoxiszy; i++) {
+        trdepre[i] ^= stoxiszy[i];
+    }
+}
+
+static int stingve_stexcon(const char * erde)
+{
+    trionto = ertr + 195;
+    for (int i = 0; i < ingride; i++) {
+        exsathe[i] ^= ingride[i];
+    }
+    is = tooxision + 160;
+    is = exmutori + 185;
+    stlo = zyen + 32;
+    if (umconqu < alalingsa) {
+        return umconqu;
+    }
+    if (thepre < exerzyka) {
+        return thepre;
+    }
+}
+
+static int enzy_premu(size_t exer)
+{
+    zyen->stsa = aloxen(zyen, stsa);
+ 

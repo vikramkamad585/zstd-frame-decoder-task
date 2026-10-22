@@ -1,0 +1,956 @@
+{
+"cases": [
+{
+"id": "00000",
+"category": "text",
+"size": 5912,
+"stored_size": 5922,
+"baseline_size": 2042,
+"reference_size": 1947
+},
+{
+"id": "00001",
+"category": "text",
+"size": 41379,
+"stored_size": 41389,
+"baseline_size": 11690,
+"reference_size": 10681
+},
+{
+"id": "00002",
+"category": "text",
+"size": 13033,
+"stored_size": 13043,
+"baseline_size": 4202,
+"reference_size": 3909
+},
+{
+"id": "00003",
+"category": "text",
+"size": 439036,
+"stored_size": 439057,
+"baseline_size": 115301,
+"reference_size": 100031
+},
+{
+"id": "00004",
+"category": "text",
+"size": 8901,
+"stored_size": 8911,
+"baseline_size": 2897,
+"reference_size": 2725
+},
+{
+"id": "00005",
+"category": "text",
+"size": 60878,
+"stored_size": 60888,
+"baseline_size": 16259,
+"reference_size": 14737
+},
+{
+"id": "00006",
+"category": "text",
+"size": 439040,
+"stored_size": 439061,
+"baseline_size": 113527,
+"reference_size": 97454
+},
+{
+"id": "00007",
+"category": "text",
+"size": 16757,
+"stored_size": 16767,
+"baseline_size": 5097,
+"reference_size": 4734
+},
+{
+"id": "00008",
+"category": "text",
+"size": 411651,
+"stored_size": 411672,
+"baseline_size": 103880,
+"reference_size": 90477
+},
+{
+"id": "00009",
+"category": "text",
+"size": 13904,
+"stored_size": 13914,
+"baseline_size": 4286,
+"reference_size": 3986
+},
+{
+"id": "00010",
+"category": "text",
+"size": 774016,
+"stored_size": 774043,
+"baseline_size": 192179,
+"reference_size": 164116
+},
+{
+"id": "00011",
+"category": "text",
+"size": 54946,
+"stored_size": 54956,
+"baseline_size": 15503,
+"reference_size": 14111
+},
+{
+"id": "00012",
+"category": "text",
+"size": 226136,
+"stored_size": 226151,
+"baseline_size": 59473,
+"reference_size": 52260
+},
+{
+"id": "00013",
+"category": "text",
+"size": 1351,
+"stored_size": 1361,
+"baseline_size": 592,
+"reference_size": 579
+},
+{
+"id": "00014",
+"category": "logs",
+"size": 366618,
+"stored_size": 366636,
+"baseline_size": 63768,
+"reference_size": 51190
+},
+{
+"id": "00015",
+"category": "logs",
+"size": 414898,
+"stored_size": 414919,
+"baseline_size": 72428,
+"reference_size": 57895
+},
+{
+"id": "00016",
+"category": "logs",
+"size": 198947,
+"stored_size": 198962,
+"baseline_size": 34427,
+"reference_size": 28263
+},
+{
+"id": "00017",
+"category": "logs",
+"size": 37247,
+"stored_size": 37257,
+"baseline_size": 6626,
+"reference_size": 5696
+},
+{
+"id": "00018",
+"category": "logs",
+"size": 33486,
+"stored_size": 33496,
+"baseline_size": 6009,
+"reference_size": 5172
+},
+{
+"id": "00019",
+"category": "logs",
+"size": 57035,
+"stored_size": 57045,
+"baseline_size": 10012,
+"reference_size": 8515
+},
+{
+"id": "00020",
+"category": "logs",
+"size": 9516,
+"stored_size": 9526,
+"baseline_size": 1938,
+"reference_size": 1734
+},
+{
+"id": "00021",
+"category": "logs",
+"size": 8274,
+"stored_size": 8284,
+"baseline_size": 1735,
+"reference_size": 1541
+},
+{
+"id": "00022",
+"category": "logs",
+"size": 1188,
+"stored_size": 1198,
+"baseline_size": 418,
+"reference_size": 403
+},
+{
+"id": "00023",
+"category": "logs",
+"size": 2888,
+"stored_size": 2898,
+"baseline_size": 755,
+"reference_size": 712
+},
+{
+"id": "00024",
+"category": "logs",
+"size": 4938,
+"stored_size": 4948,
+"baseline_size": 1162,
+"reference_size": 1046
+},
+{
+"id": "00025",
+"category": "logs",
+"size": 1320,
+"stored_size": 1330,
+"baseline_size": 468,
+"reference_size": 452
+},
+{
+"id": "00026",
+"category": "logs",
+"size": 282889,
+"stored_size": 282907,
+"baseline_size": 49102,
+"reference_size": 39791
+},
+{
+"id": "00027",
+"category": "logs",
+"size": 142492,
+"stored_size": 142507,
+"baseline_size": 24664,
+"reference_size": 20436
+},
+{
+"id": "00028",
+"category": "source",
+"size": 65391,
+"stored_size": 65401,
+"baseline_size": 13890,
+"reference_size": 12362
+},
+{
+"id": "00029",
+"category": "source",
+"size": 3620,
+"stored_size": 3630,
+"baseline_size": 1084,
+"reference_size": 1055
+},
+{
+"id": "00030",
+"category": "source",
+"size": 90822,
+"stored_size": 90834,
+"baseline_size": 18629,
+"reference_size": 16332
+},
+{
+"id": "00031",
+"category": "source",
+"size": 2627,
+"stored_size": 2637,
+"baseline_size": 984,
+"reference_size": 963
+},
+{
+"id": "00032",
+"category": "source",
+"size": 233082,
+"stored_size": 233097,
+"baseline_size": 46816,
+"reference_size": 39392
+},
+{
+"id": "00033",
+"category": "source",
+"size": 22998,
+"stored_size": 23008,
+"baseline_size": 5283,
+"reference_size": 4867
+},
+{
+"id": "00034",
+"category": "source",
+"size": 35492,
+"stored_size": 35502,
+"baseline_size": 7724,
+"reference_size": 7007
+},
+{
+"id": "00035",
+"category": "source",
+"size": 357107,
+"stored_size": 357125,
+"baseline_size": 70719,
+"reference_size": 58456
+},
+{
+"id": "00036",
+"category": "source",
+"size": 9123,
+"stored_size": 9133,
+"baseline_size": 2420,
+"reference_size": 2320
+},
+{
+"id": "00037",
+"category": "source",
+"size": 6034,
+"stored_size": 6044,
+"baseline_size": 1675,
+"reference_size": 1605
+},
+{
+"id": "00038",
+"category": "source",
+"size": 344030,
+"stored_size": 344048,
+"baseline_size": 68084,
+"reference_size": 56122
+},
+{
+"id": "00039",
+"category": "source",
+"size": 123128,
+"stored_size": 123140,
+"baseline_size": 25137,
+"reference_size": 21855
+},
+{
+"id": "00040",
+"category": "source",
+"size": 26766,
+"stored_size": 26776,
+"baseline_size": 6071,
+"reference_size": 5580
+},
+{
+"id": "00041",
+"category": "source",
+"size": 7946,
+"stored_size": 7956,
+"baseline_size": 2169,
+"reference_size": 2067
+},
+{
+"id": "00042",
+"category": "csv",
+"size": 54111,
+"stored_size": 54121,
+"baseline_size": 25004,
+"reference_size": 22734
+},
+{
+"id": "00043",
+"category": "csv",
+"size": 9178,
+"stored_size": 9188,
+"baseline_size": 4323,
+"reference_size": 4082
+},
+{
+"id": "00044",
+"category": "csv",
+"size": 3149,
+"stored_size": 3159,
+"baseline_size": 1548,
+"reference_size": 1490
+},
+{
+"id": "00045",
+"category": "csv",
+"size": 47747,
+"stored_size": 47757,
+"baseline_size": 22158,
+"reference_size": 20229
+},
+{
+"id": "00046",
+"category": "csv",
+"size": 3160,
+"stored_size": 3170,
+"baseline_size": 1547,
+"reference_size": 1488
+},
+{
+"id": "00047",
+"category": "csv",
+"size": 1315,
+"stored_size": 1325,
+"baseline_size": 685,
+"reference_size": 670
+},
+{
+"id": "00048",
+"category": "csv",
+"size": 82716,
+"stored_size": 82728,
+"baseline_size": 37922,
+"reference_size": 34382
+},
+{
+"id": "00049",
+"category": "csv",
+"size": 29385,
+"stored_size": 29395,
+"baseline_size": 13726,
+"reference_size": 12569
+},
+{
+"id": "00050",
+"category": "csv",
+"size": 33462,
+"stored_size": 33472,
+"baseline_size": 15604,
+"reference_size": 14299
+},
+{
+"id": "00051",
+"category": "csv",
+"size": 735844,
+"stored_size": 735871,
+"baseline_size": 321657,
+"reference_size": 288181
+},
+{
+"id": "00052",
+"category": "csv",
+"size": 51173,
+"stored_size": 51183,
+"baseline_size": 23694,
+"reference_size": 21521
+},
+{
+"id": "00053",
+"category": "csv",
+"size": 51481,
+"stored_size": 51491,
+"baseline_size": 23761,
+"reference_size": 21679
+},
+{
+"id": "00054",
+"category": "csv",
+"size": 221995,
+"stored_size": 222010,
+"baseline_size": 99564,
+"reference_size": 90181
+},
+{
+"id": "00055",
+"category": "csv",
+"size": 376945,
+"stored_size": 376963,
+"baseline_size": 167587,
+"reference_size": 151574
+},
+{
+"id": "00056",
+"category": "records",
+"size": 65726,
+"stored_size": 65736,
+"baseline_size": 43166,
+"reference_size": 42163
+},
+{
+"id": "00057",
+"category": "records",
+"size": 172544,
+"stored_size": 172559,
+"baseline_size": 113769,
+"reference_size": 107458
+},
+{
+"id": "00058",
+"category": "records",
+"size": 12922,
+"stored_size": 12932,
+"baseline_size": 8430,
+"reference_size": 8332
+},
+{
+"id": "00059",
+"category": "records",
+"size": 216637,
+"stored_size": 216652,
+"baseline_size": 149260,
+"reference_size": 142738
+},
+{
+"id": "00060",
+"category": "records",
+"size": 86653,
+"stored_size": 86665,
+"baseline_size": 55897,
+"reference_size": 53810
+},
+{
+"id": "00061",
+"category": "records",
+"size": 311892,
+"stored_size": 311910,
+"baseline_size": 215287,
+"reference_size": 205949
+},
+{
+"id": "00062",
+"category": "records",
+"size": 20786,
+"stored_size": 20796,
+"baseline_size": 13848,
+"reference_size": 13703
+},
+{
+"id": "00063",
+"category": "records",
+"size": 8218,
+"stored_size": 8228,
+"baseline_size": 5532,
+"reference_size": 5454
+},
+{
+"id": "00064",
+"category": "records",
+"size": 73953,
+"stored_size": 73965,
+"baseline_size": 48330,
+"reference_size": 46106
+},
+{
+"id": "00065",
+"category": "records",
+"size": 116275,
+"stored_size": 116287,
+"baseline_size": 76459,
+"reference_size": 73731
+},
+{
+"id": "00066",
+"category": "records",
+"size": 446703,
+"stored_size": 446724,
+"baseline_size": 311064,
+"reference_size": 282207
+},
+{
+"id": "00067",
+"category": "records",
+"size": 303004,
+"stored_size": 303022,
+"baseline_size": 210856,
+"reference_size": 201186
+},
+{
+"id": "00068",
+"category": "records",
+"size": 201642,
+"stored_size": 201657,
+"baseline_size": 133548,
+"reference_size": 124037
+},
+{
+"id": "00069",
+"category": "records",
+"size": 254746,
+"stored_size": 254761,
+"baseline_size": 174793,
+"reference_size": 161347
+},
+{
+"id": "00070",
+"category": "dna",
+"size": 9420,
+"stored_size": 9430,
+"baseline_size": 2177,
+"reference_size": 2029
+},
+{
+"id": "00071",
+"category": "dna",
+"size": 33424,
+"stored_size": 33434,
+"baseline_size": 6867,
+"reference_size": 6288
+},
+{
+"id": "00072",
+"category": "dna",
+"size": 2349,
+"stored_size": 2359,
+"baseline_size": 574,
+"reference_size": 548
+},
+{
+"id": "00073",
+"category": "dna",
+"size": 790521,
+"stored_size": 790551,
+"baseline_size": 128313,
+"reference_size": 116386
+},
+{
+"id": "00074",
+"category": "dna",
+"size": 101495,
+"stored_size": 101507,
+"baseline_size": 20596,
+"reference_size": 18656
+},
+{
+"id": "00075",
+"category": "dna",
+"size": 24146,
+"stored_size": 24156,
+"baseline_size": 4689,
+"reference_size": 4324
+},
+{
+"id": "00076",
+"category": "dna",
+"size": 1551,
+"stored_size": 1561,
+"baseline_size": 422,
+"reference_size": 403
+},
+{
+"id": "00077",
+"category": "dna",
+"size": 977012,
+"stored_size": 977045,
+"baseline_size": 158467,
+"reference_size": 143372
+},
+{
+"id": "00078",
+"category": "dna",
+"size": 912446,
+"stored_size": 912476,
+"baseline_size": 241724,
+"reference_size": 213079
+},
+{
+"id": "00079",
+"category": "dna",
+"size": 19857,
+"stored_size": 19867,
+"baseline_size": 5344,
+"reference_size": 4840
+},
+{
+"id": "00080",
+"category": "dna",
+"size": 15270,
+"stored_size": 15280,
+"baseline_size": 2879,
+"reference_size": 2681
+},
+{
+"id": "00081",
+"category": "dna",
+"size": 27032,
+"stored_size": 27042,
+"baseline_size": 7079,
+"reference_size": 6390
+},
+{
+"id": "00082",
+"category": "dna",
+"size": 579733,
+"stored_size": 579757,
+"baseline_size": 109542,
+"reference_size": 98620
+},
+{
+"id": "00083",
+"category": "dna",
+"size": 15486,
+"stored_size": 15496,
+"baseline_size": 3479,
+"reference_size": 3200
+},
+{
+"id": "00084",
+"category": "real",
+"size": 78185,
+"stored_size": 78197,
+"baseline_size": 23556,
+"reference_size": 22127
+},
+{
+"id": "00085",
+"category": "real",
+"size": 1055,
+"stored_size": 1065,
+"baseline_size": 490,
+"reference_size": 483
+},
+{
+"id": "00086",
+"category": "real",
+"size": 912674,
+"stored_size": 912704,
+"baseline_size": 144562,
+"reference_size": 127916
+},
+{
+"id": "00087",
+"category": "real",
+"size": 368443,
+"stored_size": 368461,
+"baseline_size": 74423,
+"reference_size": 66260
+},
+{
+"id": "00088",
+"category": "real",
+"size": 2386,
+"stored_size": 2396,
+"baseline_size": 1118,
+"reference_size": 1102
+},
+{
+"id": "00089",
+"category": "real",
+"size": 565093,
+"stored_size": 565117,
+"baseline_size": 99614,
+"reference_size": 88968
+},
+{
+"id": "00090",
+"category": "real",
+"size": 68722,
+"stored_size": 68734,
+"baseline_size": 19247,
+"reference_size": 18052
+},
+{
+"id": "00091",
+"category": "real",
+"size": 3373,
+"stored_size": 3383,
+"baseline_size": 1351,
+"reference_size": 1328
+},
+{
+"id": "00092",
+"category": "real",
+"size": 246976,
+"stored_size": 246991,
+"baseline_size": 55433,
+"reference_size": 50221
+},
+{
+"id": "00093",
+"category": "real",
+"size": 795546,
+"stored_size": 795576,
+"baseline_size": 154723,
+"reference_size": 135709
+},
+{
+"id": "00094",
+"category": "real",
+"size": 103317,
+"stored_size": 103329,
+"baseline_size": 23353,
+"reference_size": 21498
+},
+{
+"id": "00095",
+"category": "real",
+"size": 93538,
+"stored_size": 93550,
+"baseline_size": 19835,
+"reference_size": 18512
+},
+{
+"id": "00096",
+"category": "real",
+"size": 45622,
+"stored_size": 45632,
+"baseline_size": 11622,
+"reference_size": 10940
+},
+{
+"id": "00097",
+"category": "real",
+"size": 5039,
+"stored_size": 5049,
+"baseline_size": 1621,
+"reference_size": 1576
+},
+{
+"id": "00098",
+"category": "binary",
+"size": 30653,
+"stored_size": 30663,
+"baseline_size": 14340,
+"reference_size": 13480
+},
+{
+"id": "00099",
+"category": "binary",
+"size": 212488,
+"stored_size": 212503,
+"baseline_size": 62791,
+"reference_size": 55560
+},
+{
+"id": "00100",
+"category": "binary",
+"size": 45150,
+"stored_size": 45160,
+"baseline_size": 9434,
+"reference_size": 8452
+},
+{
+"id": "00101",
+"category": "binary",
+"size": 168784,
+"stored_size": 168799,
+"baseline_size": 70776,
+"reference_size": 64597
+},
+{
+"id": "00102",
+"category": "binary",
+"size": 559567,
+"stored_size": 559591,
+"baseline_size": 49250,
+"reference_size": 41547
+},
+{
+"id": "00103",
+"category": "binary",
+"size": 4593,
+"stored_size": 4603,
+"baseline_size": 3189,
+"reference_size": 3016
+},
+{
+"id": "00104",
+"category": "binary",
+"size": 81648,
+"stored_size": 81660,
+"baseline_size": 7783,
+"reference_size": 6699
+},
+{
+"id": "00105",
+"category": "binary",
+"size": 295287,
+"stored_size": 295305,
+"baseline_size": 139758,
+"reference_size": 125109
+},
+{
+"id": "00106",
+"category": "binary",
+"size": 4862,
+"stored_size": 4872,
+"baseline_size": 536,
+"reference_size": 505
+},
+{
+"id": "00107",
+"category": "binary",
+"size": 92302,
+"stored_size": 92314,
+"baseline_size": 51584,
+"reference_size": 47733
+},
+{
+"id": "00108",
+"category": "binary",
+"size": 6746,
+"stored_size": 6756,
+"baseline_size": 3656,
+"reference_size": 3540
+},
+{
+"id": "00109",
+"category": "binary",
+"size": 3664,
+"stored_size": 3674,
+"baseline_size": 2502,
+"reference_size": 2404
+},
+{
+"id": "00110",
+"category": "binary",
+"size": 655944,
+"stored_size": 655971,
+"baseline_size": 31418,
+"reference_size": 27712
+},
+{
+"id": "00111",
+"category": "binary",
+"size": 126088,
+"stored_size": 126100,
+"baseline_size": 66728,
+"reference_size": 62191
+},
+{
+"id": "00112",
+"category": "long",
+"size": 2730804,
+"stored_size": 2730876,
+"baseline_size": 464722,
+"reference_size": 389169
+},
+{
+"id": "00113",
+"category": "long",
+"size": 2498795,
+"stored_size": 2498864,
+"baseline_size": 478218,
+"reference_size": 405684
+},
+{
+"id": "00114",
+"category": "long",
+"size": 3566889,
+"stored_size": 3566982,
+"baseline_size": 1075228,
+"reference_size": 1000793
+},
+{
+"id": "00115",
+"category": "long",
+"size": 2889001,
+"stored_size": 2889079,
+"baseline_size": 672914,
+"reference_size": 589282
+},
+{
+"id": "00116",
+"category": "long",
+"size": 2563454,
+"stored_size": 2563523,
+"baseline_size": 582626,
+"reference_size": 520240
+},
+{
+"id": "00117",
+"category": "long",
+"size": 3479861,
+"stored_size": 3479951,
+"baseline_size": 748123,
+"reference_size": 671172
+},
+{
+"id": "00118",
+"category": "long",
+"size": 3016574,
+"stored_size": 3016655,
+"baseline_size": 767027,
+"reference_size": 701854
+}
+]
+}

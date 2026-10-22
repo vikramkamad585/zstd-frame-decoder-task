@@ -5,6 +5,7 @@
 mod bits;
 mod block;
 mod dict;
+mod enc;
 mod error;
 mod frame;
 mod fse;
@@ -41,9 +42,13 @@ fn real_main() -> ExitCode {
     let args: Vec<String> = std::env::args().skip(1).collect();
     let mut dict_path = None;
     let mut files = Vec::new();
+    let mut compress = false;
     let mut i = 0;
     while i < args.len() {
-        if args[i] == "-D" {
+        if args[i] == "-z" {
+            compress = true;
+            i += 1;
+        } else if args[i] == "-D" {
             let Some(p) = args.get(i + 1) else { return usage() };
             dict_path = Some(p.clone());
             i += 2;
@@ -73,6 +78,16 @@ fn real_main() -> ExitCode {
             }
         },
     };
+    if compress {
+        let mut out = enc::compress(&data);
+        if frame::decode_all(&out, None).ok().as_deref() != Some(&data[..]) {
+            out = enc::store(&data);
+        }
+        return match std::fs::write(output, &out) {
+            Ok(()) => ExitCode::SUCCESS,
+            Err(_) => ExitCode::from(1),
+        };
+    }
     match frame::decode_all(&data, dict.as_ref()) {
         Ok(out) => {
             if let Err(e) = std::fs::write(output, &out) {
