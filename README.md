@@ -9,7 +9,8 @@ expose the grader, so keep the repo private.
 Implement a complete Zstandard decoder (RFC 8878) in std-only Rust, as the CLI
 `zstdr [-D DICT] INPUT OUTPUT`. It must decode every frame that zstd v1.5.6 produces and reject
 malformed input. Grading runs 1,099 sealed cases; the reward is
-`S × (0.8 + 0.2 × E)` behind source, build and linkage gates.
+`S × (0.8 + 0.2 × E)` behind source, build and linkage gates. Success cases count toward S only
+when a frame holds a Compressed block; the 188 Raw/RLE-only cases run but carry no weight.
 
 | | |
 |---|---|
@@ -32,6 +33,7 @@ authoring/                   never shipped
   gen.py                     case generator with the acceptance filters
   check_ref.py               runs any decoder binary over a generated case set
   probe.py                   probes zstd's own leniency on hand-built frames
+  tag_compressed.py          sets each success case's `compressed` flag in a manifest
   cheats/                    deliberate cheaters, a legitimate restructured variant,
                              and partial-credit variants used for validation
   verifier_tests/            verifier regression suite (run_tests.py): 27 hostile or
@@ -79,6 +81,7 @@ emulated linux/amd64 image.
 | cheat: build.rs | 0.0 (source gate) |
 | cheat: dlopen | 0.0 (linkage gate) |
 | cheat: vendored ELF blob | 0.0 (source gate) |
+| shortcut: Raw/RLE blocks only, no entropy decoding (`cheats/rawrle`) | 0.0 (S = 0; passes 167/188 unscored Raw/RLE cases); scored 0.178 before those cases lost their weight |
 | legitimate variant (path sub-crate, threads, broad std use) | 1.0 |
 | partial: no dictionary support | 0.789 |
 | partial: no checksum verification | 0.961 |
@@ -93,8 +96,8 @@ emulated linux/amd64 image.
 | planted `/tmp/zgrade` symlink, directories at `/logs/verifier/reward.json` and `evidence.json.tmp` | reward 1.0, valid 1; were verifier faults before |
 | source tree with 120,000 files | 0.0 (source gate: more than 100,000 entries) |
 
-The final submission ZIP holds the bundle contents at the zip root: 1,461 entries, 47,788,978
-bytes, SHA-256 `1e780006ab9abda5a95660bb0053580e2ad62c5902399cd3a39e6f5f78d77f46`.
+The final submission ZIP holds the bundle contents at the zip root: 1,461 entries, 47,790,143
+bytes, SHA-256 `21faa993251fba16f2a9fbe6cb5cfed1ab547d9e9d7d51364527d8b5c119d277`.
 
 Not verifiable locally: the similarity check, the quality review, the adversarial probe and the
 capability gap between the two models. Those happen only after submission.

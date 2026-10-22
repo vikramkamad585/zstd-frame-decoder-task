@@ -47,8 +47,14 @@ def main():
     results = ev.get("results", [])
     if total <= 0 or len(results) != total:
         emit(0.0, 0, f"verifier fault: {len(results)} results for {total} cases", {})
-    per = {}
+    # Success cases count only when a frame holds a Compressed block; Raw/RLE-only
+    # frames need no entropy decoding and are reported but carry no weight.
+    per, plain = {}, [0, 0]
     for r in results:
+        if r["expect"] == "ok" and not r.get("compressed"):
+            plain[0] += 1 if r["pass"] else 0
+            plain[1] += 1
+            continue
         a = per.setdefault(r["category"], [0, 0])
         a[0] += 1 if r["pass"] else 0
         a[1] += 1
@@ -61,7 +67,8 @@ def main():
     passed = sum(1 for r in results if r["pass"])
     subs = {**gates, "build": 1.0, "S": S, "E": E,
             **{f"pass_{c}": v for c, v in rates.items()},
-            "cases_passed": float(passed), "cases_total": float(total)}
+            "cases_passed": float(passed), "cases_total": float(total),
+            "raw_rle_only_passed": float(plain[0]), "raw_rle_only_total": float(plain[1])}
     worst = sorted(((v, c) for c, v in rates.items()))[:3]
     reason = (f"{passed}/{total} cases; S={S:.4f} E={E:.4f}; weakest: "
               + ", ".join(f"{c} {v:.2f}" for v, c in worst))

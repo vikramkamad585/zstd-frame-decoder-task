@@ -23,7 +23,8 @@ handling, and XXH64.
 | `/app/.timer/` | Remaining time budget (see *Time budget*). |
 
 Each `manifest.json` entry has `id`, `category`, `dict` (a file name in `dicts/` or `null`),
-`expect` (`"ok"` or `"error"`), `sha256` and `size` of the expected output for `"ok"` cases, and a
+`expect` (`"ok"` or `"error"`), `sha256` and `size` of the expected output for `"ok"` cases,
+`compressed` for `"ok"` cases (whether any frame in the input holds a Compressed block), and a
 `note` describing how the input was produced (for example `-19 --zstd=strategy=9,wlog=21` or
 `truncated at 811/2048`).
 
@@ -168,7 +169,13 @@ The tenth, `errors`, is the rejection category: truncation, checksum mismatches,
 block types, bad magic and trailing garbage, oversized windows and blocks, content-size mismatches,
 and missing or wrong dictionaries.
 
-With *p_c* the fraction of cases passed in category *c*:
+A success case is scored only when at least one of its frames holds a Compressed block
+(`Block_Type` 2), which is the case for most of them. Success cases whose frames hold only Raw and
+RLE blocks still run, and `selfcheck.py` and the grading details report them, but they carry no
+weight: copying Raw and RLE blocks alone scores 0. Every category keeps scored cases, including
+`edge`. Rejection cases are all scored.
+
+With *p_c* the fraction of scored cases passed in category *c*:
 
 ```
 S     = mean of p_c over the nine success categories   (each category weighs 1/9)

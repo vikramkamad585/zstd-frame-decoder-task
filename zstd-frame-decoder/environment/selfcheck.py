@@ -285,18 +285,25 @@ def main():
     out_dir = f"{work}/out"
     os.makedirs(out_dir)
     per, fails, slow = {}, [], 0.0
+    plain = [0, 0]  # Raw/RLE-only success cases: reported, no weight in the score
     with ThreadPoolExecutor(8) as ex:
         for case, ok, why, secs in ex.map(lambda c: run_case(binary, c, out_dir), cases):
+            if not ok:
+                fails.append((case, why))
+            slow = max(slow, secs)
+            if case["expect"] == "ok" and not case.get("compressed"):
+                plain[0] += ok
+                plain[1] += 1
+                continue
             a = per.setdefault(case["category"], [0, 0])
             a[0] += ok
             a[1] += 1
-            slow = max(slow, secs)
-            if not ok:
-                fails.append((case, why))
     print(f"{'category':12s} {'pass':>9s}")
     for c in SUCCESS_CATEGORIES + ["errors"]:
         if c in per:
             print(f"{c:12s} {per[c][0]:4d}/{per[c][1]:<4d}")
+    if plain[1]:
+        print(f"{'raw/rle-only':12s} {plain[0]:4d}/{plain[1]:<4d}  (not scored)")
     rate = lambda c: per[c][0] / per[c][1] if c in per else 0.0
     if not only:
         S = sum(rate(c) for c in SUCCESS_CATEGORIES) / len(SUCCESS_CATEGORIES)

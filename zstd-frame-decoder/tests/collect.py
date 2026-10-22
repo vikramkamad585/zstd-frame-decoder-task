@@ -426,6 +426,7 @@ def run_case(binary, case, case_dir, out_dir):
     except OSError:
         pass
     return {"id": case["id"], "category": case["category"], "expect": case["expect"],
+            "compressed": bool(case.get("compressed", False)),
             "pass": bool(ok), "detail": why, "secs": round(elapsed, 3)}
 
 

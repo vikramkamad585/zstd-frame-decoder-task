@@ -19,6 +19,8 @@ import subprocess
 import sys
 import tempfile
 
+from tag_compressed import has_compressed
+
 ZSTD = "/usr/local/bin/zstd"
 OUT, SEED, SCALE, KIND = sys.argv[1], int(sys.argv[2]), float(sys.argv[3]), sys.argv[4]
 rng = random.Random(SEED)
@@ -217,6 +219,7 @@ def add(cat, frame, expect_ok, original=None, dict_name=None, note=""):
     if expect_ok:
         entry["sha256"] = hashlib.sha256(out).hexdigest()
         entry["size"] = len(out)
+        entry["compressed"] = has_compressed(frame)
         if KIND == "visible":
             with open(f"{OUT}/cases/{cid}.out", "wb") as f:
                 f.write(out)
