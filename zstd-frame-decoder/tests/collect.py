@@ -426,7 +426,8 @@ def run_case(binary, case, case_dir, out_dir):
     except OSError:
         pass
     return {"id": case["id"], "category": case["category"], "expect": case["expect"],
-            "compressed": bool(case.get("compressed", False)),
+            # Every success case must carry the flag; a missing one is a verifier fault.
+            "compressed": bool(case["compressed"]) if case["expect"] == "ok" else False,
             "pass": bool(ok), "detail": why, "secs": round(elapsed, 3)}
 
 
@@ -435,6 +436,9 @@ def main():
     ev["cases_total"] = len(manifest)
     ev["categories"] = sorted({c["category"] for c in manifest})
     write_evidence()
+    unflagged = [c["id"] for c in manifest if c["expect"] == "ok" and "compressed" not in c]
+    if unflagged:
+        raise RuntimeError(f"manifest success cases lack the 'compressed' flag: {unflagged[:5]}")
 
     if os.path.exists("/etc/ld.so.preload") and os.path.getsize("/etc/ld.so.preload") > 0:
         fail_gate("loader", "/etc/ld.so.preload is present")

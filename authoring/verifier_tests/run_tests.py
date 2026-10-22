@@ -86,6 +86,11 @@ SCENARIOS = [
     ("workdir-tamper", f"{REF} && python3 /scen/hostile/tamper.py /app/zstdr/src/main.rs",
      {"reward": 1.0, "valid": 1, "after": "test -e /tmp/zgrade/bin.stolen || test -e /tmp/zgrade/inputs.stolen || echo UNTOUCHED",
       "after_ok": "UNTOUCHED"}),
+    # A sealed manifest without the scoring flag must stop grading, not score silently.
+    ("manifest-flag-missing",
+     f"{REF} && python3 -c \"import json; p='/tests/cases/manifest.json'; d=json.load(open(p)); "
+     "del d['cases'][0]['compressed']; json.dump(d, open(p, 'w'))\"",
+     {"reward": 0.0, "valid": 0, "reason": "lack the 'compressed' flag"}),
     ("hostile-runtime",
      f"{REF} && python3 /scen/hostile/inject.py /app/zstdr/src/main.rs",
      {"hostile": True, "valid": 1}),

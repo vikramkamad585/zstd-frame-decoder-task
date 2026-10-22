@@ -291,7 +291,7 @@ def main():
             if not ok:
                 fails.append((case, why))
             slow = max(slow, secs)
-            if case["expect"] == "ok" and not case.get("compressed"):
+            if case["expect"] == "ok" and not case["compressed"]:
                 plain[0] += ok
                 plain[1] += 1
                 continue
