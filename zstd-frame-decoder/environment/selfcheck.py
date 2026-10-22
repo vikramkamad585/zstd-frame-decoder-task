@@ -48,6 +48,8 @@ def run_limited(args, timeout, preexec, cwd=None, env=None):
 
 # ------------------------------------------------------------------ gates
 TREE_LIMIT = 256 << 20
+TREE_ENTRIES = 100_000
+READELF_KEEP = 64 << 20
 SKIP_DIRS = {"target", ".git"}
 
 
@@ -58,8 +60,12 @@ def copy_source(src, dst):
     if os.path.islink(src):
         return f"{src} is a symlink"
     total = 0
+    entries = 0
     for dirpath, dirnames, filenames in os.walk(src):
         rel_dir = os.path.relpath(dirpath, src)
+        entries += len(dirnames) + len(filenames)
+        if entries > TREE_ENTRIES:
+            return f"source tree has more than {TREE_ENTRIES} entries"
         os.makedirs(os.path.join(dst, rel_dir), exist_ok=True)
         for d in list(dirnames):
             if d in SKIP_DIRS:
@@ -188,19 +194,28 @@ def check_manifest(text, manifest_dir, root):
     return ""
 
 
-def check_binary(path):
-    rc, out = run_limited(["readelf", "-d", "-W", path], 60, None)
+def readelf(*args):
+    rc, out = run_limited(["readelf", *args], 60, None)
+    if len(out) > READELF_KEEP:
+        return None, "readelf output is too large to inspect"
     if rc != 0:
-        return f"readelf failed: {out[-200:]}"
+        return None, f"readelf failed: {out[-200:]}"
+    return out, ""
+
+
+def check_binary(path):
+    out, err = readelf("-d", "-W", path)
+    if err:
+        return err
     needed = [line.split("[", 1)[1].rstrip("]") for line in out.splitlines() if "(NEEDED)" in line]
     if "(NEEDED)" not in out and "Dynamic section" not in out:
         return "binary is not dynamically linked against the system C library"
     for lib in needed:
         if lib not in NEEDED_OK and not lib.startswith("ld-linux"):
             return f"binary links {lib}"
-    rc, out = run_limited(["readelf", "--dyn-syms", "-W", path], 60, None)
-    if rc != 0:
-        return f"readelf failed: {out[-200:]}"
+    out, err = readelf("--dyn-syms", "-W", path)
+    if err:
+        return err
     for line in out.splitlines():
         cols = line.split()
         if len(cols) >= 8 and cols[6] == "UND":
@@ -247,6 +262,9 @@ def main():
     env = {"PATH": CLEAN_PATH, "HOME": f"{work}/home", "CARGO_HOME": f"{work}/cargo-home",
            "RUSTUP_HOME": "/usr/local/rustup", "CARGO_TARGET_DIR": f"{work}/target",
            "CARGO_NET_OFFLINE": "true", "LC_ALL": "C"}
+    rc, out = run_limited(["rustup", "default"], 60, None, cwd="/", env=dict(env, CARGO_HOME="/usr/local/cargo"))
+    if rc == 0 and out.split():
+        env["RUSTUP_TOOLCHAIN"] = out.split()[0]  # grading ignores rust-toolchain files too
     os.makedirs(env["HOME"])
     rc, log = run_limited(["cargo", "build", "--release", "--offline", "--bin", "zstdr"], 1200,
                           None, cwd=f"{work}/src", env=env)

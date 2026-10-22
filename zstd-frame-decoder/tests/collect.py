@@ -107,14 +107,16 @@ def kill_run_user():
             pass
 
 
-def run_limited(args, timeout, preexec, cwd=None, env=None):
-    """Run a child with a wall-clock limit, keeping only the last LOG_KEEP
+def run_limited(args, timeout, preexec, cwd=None, env=None, keep=LOG_KEEP):
+    """Run a child with a wall-clock limit, keeping only the last `keep`
     bytes of its combined stdout/stderr so a noisy child cannot exhaust
-    verifier memory. Returns (returncode or None on timeout, log tail)."""
+    verifier memory. Returns (returncode or None on timeout, log tail,
+    whether the log was truncated)."""
     p = subprocess.Popen(args, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
                          stderr=subprocess.STDOUT, cwd=cwd, env=env, preexec_fn=preexec,
                          start_new_session=preexec is None)
     tail = bytearray()
+    seen = [0]
     lock = threading.Lock()
 
     def pump():
@@ -126,9 +128,10 @@ def run_limited(args, timeout, preexec, cwd=None, env=None):
             if not chunk:
                 return
             with lock:
+                seen[0] += len(chunk)
                 tail.extend(chunk)
-                if len(tail) > LOG_KEEP:
-                    del tail[:-LOG_KEEP]
+                if len(tail) > keep:
+                    del tail[:-keep]
 
     reader = threading.Thread(target=pump, daemon=True)
     reader.start()
@@ -147,7 +150,8 @@ def run_limited(args, timeout, preexec, cwd=None, env=None):
         reader.join(5)
     with lock:
         log = bytes(tail).decode(errors="replace")
-    return (None if timed_out else p.returncode), log
+        truncated = seen[0] > keep
+    return (None if timed_out else p.returncode), log, truncated
 
 
 def read_output(path, expected_size, expected_sha):
@@ -182,6 +186,8 @@ def read_output(path, expected_size, expected_sha):
 
 # ------------------------------------------------------------------ gates
 TREE_LIMIT = 256 << 20
+TREE_ENTRIES = 100_000
+READELF_KEEP = 64 << 20       # readelf output is parsed whole, never tail-truncated
 SKIP_DIRS = {"target", ".git"}
 
 
@@ -192,8 +198,12 @@ def copy_source(src, dst):
     if os.path.islink(src):
         return f"{src} is a symlink"
     total = 0
+    entries = 0
     for dirpath, dirnames, filenames in os.walk(src):
         rel_dir = os.path.relpath(dirpath, src)
+        entries += len(dirnames) + len(filenames)
+        if entries > TREE_ENTRIES:
+            return f"source tree has more than {TREE_ENTRIES} entries"
         os.makedirs(os.path.join(dst, rel_dir), exist_ok=True)
         for d in list(dirnames):
             if d in SKIP_DIRS:
@@ -322,19 +332,30 @@ def check_manifest(text, manifest_dir, root):
     return ""
 
 
-def check_binary(path):
-    rc, out = run_limited(["readelf", "-d", "-W", path], 60, None)
+def readelf(*args):
+    """Full readelf output, or an error string. The gate must see every
+    line: a tail would drop the undefined imports listed first."""
+    rc, out, truncated = run_limited(["readelf", *args], 60, None, keep=READELF_KEEP)
+    if truncated:
+        return None, "readelf output is too large to inspect"
     if rc != 0:
-        return f"readelf failed: {out[-200:]}"
+        return None, f"readelf failed: {out[-200:]}"
+    return out, ""
+
+
+def check_binary(path):
+    out, err = readelf("-d", "-W", path)
+    if err:
+        return err
     needed = [line.split("[", 1)[1].rstrip("]") for line in out.splitlines() if "(NEEDED)" in line]
     if "(NEEDED)" not in out and "Dynamic section" not in out:
         return "binary is not dynamically linked against the system C library"
     for lib in needed:
         if lib not in NEEDED_OK and not lib.startswith("ld-linux"):
             return f"binary links {lib}"
-    rc, out = run_limited(["readelf", "--dyn-syms", "-W", path], 60, None)
-    if rc != 0:
-        return f"readelf failed: {out[-200:]}"
+    out, err = readelf("--dyn-syms", "-W", path)
+    if err:
+        return err
     for line in out.splitlines():
         cols = line.split()
         if len(cols) >= 8 and cols[6] == "UND":
@@ -356,6 +377,29 @@ def hide_libzstd():
     return hidden
 
 
+def fresh_workdir():
+    """Recreate WORK as a root-owned directory, whatever was planted there."""
+    if os.path.islink(WORK) or (os.path.lexists(WORK) and not os.path.isdir(WORK)):
+        os.unlink(WORK)
+    shutil.rmtree(WORK, ignore_errors=True)
+    if os.path.lexists(WORK):
+        os.rename(WORK, f"{WORK}.stale-{os.getpid()}")
+    os.makedirs(WORK)
+    os.chmod(WORK, 0o755)
+
+
+def default_toolchain():
+    """The image's installed default toolchain; `rustup default` ignores
+    directory overrides and toolchain files."""
+    rc, out, _ = run_limited(["rustup", "default"], 60, None, cwd="/",
+                             env={"PATH": CLEAN_PATH, "RUSTUP_HOME": "/usr/local/rustup",
+                                  "CARGO_HOME": "/usr/local/cargo", "LC_ALL": "C"})
+    name = out.split()[0] if rc == 0 and out.split() else ""
+    if not name or not os.path.isdir(f"/usr/local/rustup/toolchains/{name}"):
+        raise RuntimeError(f"cannot determine the default Rust toolchain: {out[-200:]!r}")
+    return name
+
+
 def run_case(binary, case, case_dir, out_dir):
     out_path = f"{out_dir}/{case['id']}.out"
     args = [binary]
@@ -363,8 +407,11 @@ def run_case(binary, case, case_dir, out_dir):
         args += ["-D", f"{case_dir}/dicts/{case['dict']}"]
     args += [f"{case_dir}/cases/{case['id']}.zst", out_path]
     t0 = time.monotonic()
-    rc, log = run_limited(args, CASE_TIMEOUT, drop_privileges, cwd=out_dir,
-                          env={"PATH": "/nonexistent", "HOME": out_dir, "LC_ALL": "C"})
+    try:
+        rc, log, _ = run_limited(args, CASE_TIMEOUT, drop_privileges, cwd=out_dir,
+                                 env={"PATH": "/nonexistent", "HOME": out_dir, "LC_ALL": "C"})
+    except OSError as e:
+        rc, log = -1, f"could not start decoder ({e.strerror})"
     elapsed = time.monotonic() - t0
     if rc is None:
         ok, why = False, "timeout"
@@ -392,9 +439,7 @@ def main():
         fail_gate("loader", "/etc/ld.so.preload is present")
         return
 
-    shutil.rmtree(WORK, ignore_errors=True)
-    os.makedirs(WORK)
-    os.chmod(WORK, 0o755)
+    fresh_workdir()
     if not os.path.isdir(SRC) or not os.path.isfile(f"{SRC}/Cargo.toml"):
         fail_gate("build", f"{SRC}/Cargo.toml not found")
         return
@@ -422,9 +467,12 @@ def main():
     ev["displaced_cargo_config"] = [a for _, a in displaced]
 
     # Build unprivileged, offline, with a clean environment and a fresh cargo home.
-    for d in ("cargo-home", "target", "home"):
-        os.makedirs(f"{WORK}/{d}")
-    subprocess.run(["chown", "-R", f"{RUN_UID}:{RUN_GID}", WORK], check=True)
+    # WORK itself stays root-owned so the run user cannot rename the root-owned
+    # bin/ and inputs/ staged in it later.
+    build_dirs = [f"{WORK}/{d}" for d in ("src", "cargo-home", "target", "home")]
+    for d in build_dirs[1:]:
+        os.makedirs(d)
+    subprocess.run(["chown", "-R", f"{RUN_UID}:{RUN_GID}", *build_dirs], check=True)
     try:
         os.chmod(TESTS, 0o700)
         ev["tests_sealed"] = True
@@ -432,10 +480,12 @@ def main():
         ev["tests_sealed"] = False
     env = {"PATH": CLEAN_PATH, "HOME": f"{WORK}/home", "CARGO_HOME": f"{WORK}/cargo-home",
            "RUSTUP_HOME": "/usr/local/rustup", "CARGO_TARGET_DIR": f"{WORK}/target",
-           "CARGO_NET_OFFLINE": "true", "LC_ALL": "C"}
+           "CARGO_NET_OFFLINE": "true", "LC_ALL": "C",
+           # Overrides any rust-toolchain file in the package or its ancestors.
+           "RUSTUP_TOOLCHAIN": default_toolchain()}
     try:
-        rc, log = run_limited(["cargo", "build", "--release", "--offline", "--bin", "zstdr"],
-                              BUILD_TIMEOUT, drop_privileges_build, cwd=f"{WORK}/src", env=env)
+        rc, log, _ = run_limited(["cargo", "build", "--release", "--offline", "--bin", "zstdr"],
+                                 BUILD_TIMEOUT, drop_privileges_build, cwd=f"{WORK}/src", env=env)
     finally:
         kill_run_user()
         for aside, anc in displaced:

@@ -113,7 +113,7 @@ a copy of `/app/zstdr`.
 ### Hard gates: any failure scores 0
 
 1. **Source gate.** The tree is copied (skipping `target/` and `.git/` directories at any depth,
-   at most 256 MiB in total) and these checks apply to the copy:
+   at most 256 MiB and 100,000 files and directories in total) and these checks apply to the copy:
    - only `std`: every dependency in any `Cargo.toml` must be a `path` dependency inside the
      package, or `{ workspace = true }` resolving to one
    - no `build.rs`, no `package.build`, no `package.links`, no proc-macro crates, no `[patch]` or
@@ -124,7 +124,8 @@ a copy of `/app/zstdr`.
    - every `Cargo.toml` must parse; a manifest that does not parse, or uses an unsupported
      structure, fails this gate
 2. **Build gate.** The build runs as a non-root user with a clean environment, a fresh
-   `CARGO_HOME`, no `RUSTFLAGS` and no network, with a 20-minute limit. `cargo build --release
+   `CARGO_HOME`, no `RUSTFLAGS`, no network and the installed Rust 1.83 toolchain (any
+   `rust-toolchain` file is ignored), with a 20-minute limit. `cargo build --release
    --offline --bin zstdr` must succeed.
 3. **Linkage gate.** The binary must be dynamically linked only against `libc.so.6`, `libm.so.6`,
    `libgcc_s.so.1`, `libpthread.so.0`, `librt.so.1` and the dynamic loader. It must not import any

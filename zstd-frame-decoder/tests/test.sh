@@ -7,8 +7,8 @@ unset PYTHONPATH PYTHONHOME PYTHONSTARTUP PYTHONINSPECT LD_PRELOAD LD_LIBRARY_PA
       RUSTFLAGS CARGO_BUILD_RUSTFLAGS CARGO_ENCODED_RUSTFLAGS RUSTC RUSTC_WRAPPER \
       RUSTC_WORKSPACE_WRAPPER CARGO_TARGET_DIR CARGO_BUILD_TARGET RUSTDOCFLAGS
 mkdir -p /logs/verifier
-rm -f /logs/verifier/evidence.json /logs/verifier/reward.txt /logs/verifier/reward.json \
-      /logs/verifier/details.json
+rm -rf /logs/verifier/evidence.json /logs/verifier/evidence.json.tmp /logs/verifier/reward.txt \
+       /logs/verifier/reward.json /logs/verifier/details.json
 
 python3 -E -s /tests/collect.py > /logs/verifier/collect.log 2>&1
 

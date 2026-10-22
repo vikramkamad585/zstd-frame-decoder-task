@@ -34,7 +34,7 @@ authoring/                   never shipped
   probe.py                   probes zstd's own leniency on hand-built frames
   cheats/                    deliberate cheaters, a legitimate restructured variant,
                              and partial-credit variants used for validation
-  verifier_tests/            verifier regression suite (run_tests.py): 20 hostile or
+  verifier_tests/            verifier regression suite (run_tests.py): 27 hostile or
                              edge-case scenarios run against the real tests/ in the image
 ```
 
@@ -61,7 +61,8 @@ Verifier regression suite (needs the task image built as `zfd-env`):
 
 ```bash
 docker build -t zfd-env zstd-frame-decoder/environment
-python3 authoring/verifier_tests/run_tests.py      # expect 20/20 scenarios passed
+python3 authoring/verifier_tests/run_tests.py      # expect 27/27 scenarios passed
+python3 authoring/verifier_tests/run_tests.py zfd-env dynsym-flood   # one scenario
 ```
 
 ## Results recorded on 2026-10-22
@@ -82,13 +83,18 @@ emulated linux/amd64 image.
 | partial: no dictionary support | 0.789 |
 | partial: no checksum verification | 0.961 |
 | amd64 (emulated) nop / oracle | 0.0 / 1.0 |
-| verifier regression suite (after hardening) | 20/20 scenarios pass |
+| verifier regression suite (after hardening) | 27/27 scenarios pass |
 | hostile decoder: symlink, FIFO and sparse 900 MB outputs, 300 MB stderr floods | no hang; those cases fail cleanly; verifier peak memory ~40 MB; reward 0.879, valid 1 |
 | malformed or unsupported `Cargo.toml`, nested `.cargo`, symlinks, device nodes, oversized tree | reward 0.0, valid 1 |
 | planted `/.cargo` and `/tmp/.cargo` configs | moved aside during the build and restored; reward 1.0 |
+| `rust-toolchain.toml` pointing at a fake toolchain, in the package or in `/tmp` | ignored (`RUSTUP_TOOLCHAIN` pinned); fake rustc never runs; reward 1.0 |
+| decoder importing `fork` plus ~3,000 libc/libm symbols (265 KB of `readelf` output) | 0.0 (linkage gate); scored 1.0 before `readelf` output stopped being tail-truncated |
+| decoder renaming the root-owned `bin/` and `inputs/` during grading | refused (grading dir now root-owned); reward 1.0; was a verifier fault before |
+| planted `/tmp/zgrade` symlink, directories at `/logs/verifier/reward.json` and `evidence.json.tmp` | reward 1.0, valid 1; were verifier faults before |
+| source tree with 120,000 files | 0.0 (source gate: more than 100,000 entries) |
 
-The final submission ZIP holds the bundle contents at the zip root: 1,461 entries, 47,788,006
-bytes, SHA-256 `a0865a66893dcb381b789740ab84e547a2e4c570d79072df048ed5bf65ca6cb6`.
+The final submission ZIP holds the bundle contents at the zip root: 1,461 entries, 47,788,978
+bytes, SHA-256 `1e780006ab9abda5a95660bb0053580e2ad62c5902399cd3a39e6f5f78d77f46`.
 
 Not verifiable locally: the similarity check, the quality review, the adversarial probe and the
 capability gap between the two models. Those happen only after submission.

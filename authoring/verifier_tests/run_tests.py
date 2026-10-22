@@ -2,7 +2,7 @@
 """Verifier regression tests. Runs each scenario in the task image against
 the real tests/ directory and checks reward, validity and reason.
 
-usage: run_tests.py [IMAGE]      (default zfd-env)
+usage: run_tests.py [IMAGE] [SCENARIO ...]      (default zfd-env, all scenarios)
 """
 import json
 import os
@@ -12,8 +12,11 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 BUNDLE = os.path.expanduser("~/corgi/zstd-frame-decoder")
 IMAGE = sys.argv[1] if len(sys.argv) > 1 else "zfd-env"
+ONLY = set(sys.argv[2:])
 REF = "rm -rf /app/zstdr && cp -r /solution/zstdr-ref /app/zstdr && rm -rf /app/zstdr/target"
 MANI = "/app/zstdr/Cargo.toml"
+FAKE_TC = ("mkdir -p /opt/tc/bin && printf '#!/bin/sh\\ntouch /tmp/PWNED\\nexit 1\\n' > /opt/tc/bin/rustc"
+           " && cp /opt/tc/bin/rustc /opt/tc/bin/cargo && chmod 755 /opt/tc/bin/*")
 
 
 def toml_edit(py):
@@ -59,13 +62,30 @@ SCENARIOS = [
     # Must still score full marks:
     ("ancestor-cargo-config-neutralized",
      f"{REF} && mkdir -p /tmp/.cargo /.cargo && printf '[build]\\nrustflags = [\"-C\", \"target-feature=+crt-static\"]\\n' | tee /tmp/.cargo/config.toml > /.cargo/config.toml",
-     {"reward": 1.0, "valid": 1, "after": "test -f /tmp/.cargo/config.toml && test -f /.cargo/config.toml && echo RESTORED"}),
+     {"reward": 1.0, "valid": 1, "after": "test -f /tmp/.cargo/config.toml && test -f /.cargo/config.toml && echo RESTORED",
+      "after_ok": "RESTORED"}),
     ("workspace-dependency-legit",
      f"{REF} && mkdir -p /app/zstdr/xxh/src && mv /app/zstdr/src/xxhash64.rs /app/zstdr/xxh/src/lib.rs"
      " && printf '[package]\\nname = \"xxh\"\\nversion = \"0.1.0\"\\nedition = \"2021\"\\n' > /app/zstdr/xxh/Cargo.toml"
      " && sed -i 's/^mod xxhash64;//' /app/zstdr/src/main.rs && sed -i 's/use crate::xxhash64::xxh64;/use xxh::xxh64;/' /app/zstdr/src/frame.rs && "
      + toml_edit("s += '\\n[dependencies]\\nxxh = { workspace = true }\\n\\n[workspace]\\nmembers = [\"xxh\"]\\n\\n[workspace.dependencies]\\nxxh = { path = \"xxh\" }\\n'"),
      {"reward": 1.0, "valid": 1}),
+    # A planted toolchain whose rustc only leaves a marker; it must never run.
+    ("toolchain-file-ignored", f"{REF} && {FAKE_TC} && printf '[toolchain]\\npath = \"/opt/tc\"\\n' > /app/zstdr/rust-toolchain.toml",
+     {"reward": 1.0, "valid": 1, "after": "test -e /tmp/PWNED || echo CLEAN", "after_ok": "CLEAN"}),
+    ("ancestor-toolchain-file-ignored", f"{REF} && {FAKE_TC} && printf '[toolchain]\\npath = \"/opt/tc\"\\n' > /tmp/rust-toolchain.toml",
+     {"reward": 1.0, "valid": 1, "after": "test -e /tmp/PWNED || echo CLEAN", "after_ok": "CLEAN"}),
+    ("too-many-entries", f"{REF} && mkdir /app/zstdr/many && cd /app/zstdr/many && seq 1 120000 | xargs touch",
+     {"reward": 0.0, "valid": 1, "reason": "more than 100000 entries"}),
+    ("dynsym-flood", f"{REF} && python3 /scen/hostile/bloat_dynsym.py /app/zstdr/src/main.rs",
+     {"reward": 0.0, "valid": 1, "reason": "imports fork"}),
+    ("planted-workdir-symlink", f"{REF} && ln -s /nonexistent /tmp/zgrade",
+     {"reward": 1.0, "valid": 1}),
+    ("planted-verifier-output-dirs", f"{REF} && mkdir -p /logs/verifier/evidence.json.tmp /logs/verifier/reward.json",
+     {"reward": 1.0, "valid": 1}),
+    ("workdir-tamper", f"{REF} && python3 /scen/hostile/tamper.py /app/zstdr/src/main.rs",
+     {"reward": 1.0, "valid": 1, "after": "test -e /tmp/zgrade/bin.stolen || test -e /tmp/zgrade/inputs.stolen || echo UNTOUCHED",
+      "after_ok": "UNTOUCHED"}),
     ("hostile-runtime",
      f"{REF} && python3 /scen/hostile/inject.py /app/zstdr/src/main.rs",
      {"hostile": True, "valid": 1}),
@@ -120,8 +140,8 @@ python3 -c 'import json;e=json.load(open("/logs/verifier/evidence.json"));print(
     want_exit = "0" if reward["reward"] > 0 else "1"
     if vals.get("EXIT") != want_exit:
         problems.append(f"test.sh exit {vals.get('EXIT')} for reward {reward['reward']}")
-    if "after" in expect and "RESTORED" not in out:
-        problems.append("planted ancestor config not restored")
+    if "after_ok" in expect and expect["after_ok"] not in out:
+        problems.append(f"post-run check did not print {expect['after_ok']}")
     summary = f"reward={reward['reward']} valid={reward['valid']} reason={details['reason'][:90]!r}"
     if expect.get("hostile"):
         bad = {0, 5, 10, 20}
@@ -151,13 +171,14 @@ python3 -c 'import json;e=json.load(open("/logs/verifier/evidence.json"));print(
 
 def main():
     failed = 0
-    for name, setup, expect in SCENARIOS:
+    scenarios = [sc for sc in SCENARIOS if not ONLY or sc[0] in ONLY]
+    for name, setup, expect in scenarios:
         n, ok, problems, summary = run(name, setup, expect)
         print(f"{'PASS' if ok else 'FAIL'} {n}: {summary}")
         for pr in problems:
             print(f"      {pr}")
         failed += not ok
-    print(f"\n{len(SCENARIOS) - failed}/{len(SCENARIOS)} scenarios passed")
+    print(f"\n{len(scenarios) - failed}/{len(scenarios)} scenarios passed")
     return 1 if failed else 0
 
 
