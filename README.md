@@ -34,6 +34,8 @@ authoring/                   never shipped
   probe.py                   probes zstd's own leniency on hand-built frames
   cheats/                    deliberate cheaters, a legitimate restructured variant,
                              and partial-credit variants used for validation
+  verifier_tests/            verifier regression suite (run_tests.py): 20 hostile or
+                             edge-case scenarios run against the real tests/ in the image
 ```
 
 ## Rebuilding the cases
@@ -55,6 +57,13 @@ harbor run -p . -a nop    -e docker -k 1    # expect reward 0.0
 harbor run -p . -a oracle -e docker -k 2    # expect reward 1.0 on both runs
 ```
 
+Verifier regression suite (needs the task image built as `zfd-env`):
+
+```bash
+docker build -t zfd-env zstd-frame-decoder/environment
+python3 authoring/verifier_tests/run_tests.py      # expect 20/20 scenarios passed
+```
+
 ## Results recorded on 2026-10-22
 
 These ran on an Apple M5 with Docker Desktop, using arm64 images; the last row was re-run on an
@@ -73,6 +82,13 @@ emulated linux/amd64 image.
 | partial: no dictionary support | 0.789 |
 | partial: no checksum verification | 0.961 |
 | amd64 (emulated) nop / oracle | 0.0 / 1.0 |
+| verifier regression suite (after hardening) | 20/20 scenarios pass |
+| hostile decoder: symlink, FIFO and sparse 900 MB outputs, 300 MB stderr floods | no hang; those cases fail cleanly; verifier peak memory ~40 MB; reward 0.879, valid 1 |
+| malformed or unsupported `Cargo.toml`, nested `.cargo`, symlinks, device nodes, oversized tree | reward 0.0, valid 1 |
+| planted `/.cargo` and `/tmp/.cargo` configs | moved aside during the build and restored; reward 1.0 |
+
+The final submission ZIP holds the bundle contents at the zip root: 1,461 entries, 47,788,006
+bytes, SHA-256 `a0865a66893dcb381b789740ab84e547a2e4c570d79072df048ed5bf65ca6cb6`.
 
 Not verifiable locally: the similarity check, the quality review, the adversarial probe and the
 capability gap between the two models. Those happen only after submission.

@@ -51,7 +51,8 @@ zstdr [-D DICTIONARY] INPUT OUTPUT
 - `-D DICTIONARY`, when present, comes first and names a dictionary file (rules below). The same
   dictionary applies to every frame in the input.
 - **Success:** write the concatenated decoded content of every Zstandard frame, in order, to
-  `OUTPUT` (skippable frames contribute nothing) and exit with status 0. An input whose frames decode
+  `OUTPUT` as a regular file (skippable frames contribute nothing) and exit with status 0. A
+  symlink, FIFO or other non-regular file at `OUTPUT` counts as a failure. An input whose frames decode
   to zero bytes produces an empty `OUTPUT`.
 - **Rejection:** exit with status **1**. The contents of `OUTPUT` do not matter after a rejection.
   A panic, an abort, any other exit status, a signal or a timeout counts as neither a successful
@@ -111,14 +112,17 @@ a copy of `/app/zstdr`.
 
 ### Hard gates: any failure scores 0
 
-1. **Source gate.** These checks apply to the copied tree (excluding `target/` and `.git/`):
+1. **Source gate.** The tree is copied (skipping `target/` and `.git/` directories at any depth,
+   at most 256 MiB in total) and these checks apply to the copy:
    - only `std`: every dependency in any `Cargo.toml` must be a `path` dependency inside the
-     package
+     package, or `{ workspace = true }` resolving to one
    - no `build.rs`, no `package.build`, no `package.links`, no proc-macro crates, no `[patch]` or
      `[replace]`
-   - no `.cargo/` directory
-   - no C/C++ sources or headers, no object files, static or shared libraries, and no ELF file
-     anywhere in the tree
+   - no `.cargo/` directory at any depth
+   - no C/C++ sources or headers, no object files, static or shared libraries, no ELF file, and
+     no symlink, FIFO or device file anywhere in the tree
+   - every `Cargo.toml` must parse; a manifest that does not parse, or uses an unsupported
+     structure, fails this gate
 2. **Build gate.** The build runs as a non-root user with a clean environment, a fresh
    `CARGO_HOME`, no `RUSTFLAGS` and no network, with a 20-minute limit. `cargo build --release
    --offline --bin zstdr` must succeed.

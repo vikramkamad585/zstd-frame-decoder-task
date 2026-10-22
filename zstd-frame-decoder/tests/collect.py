@@ -14,6 +14,7 @@ import signal
 import stat
 import subprocess
 import sys
+import threading
 import time
 import traceback
 from concurrent.futures import ThreadPoolExecutor
@@ -29,6 +30,8 @@ RUN_GID = 64011
 CASE_TIMEOUT = 20
 BUILD_TIMEOUT = 1200
 WORKERS = 8
+LOG_KEEP = 64 * 1024          # bytes of child stdout/stderr retained
+OUTPUT_LIMIT = 1 << 30        # matches RLIMIT_FSIZE for decoder runs
 
 NEEDED_OK = ("libc.so.6", "libm.so.6", "libgcc_s.so.1", "libpthread.so.0", "librt.so.1")
 FORBIDDEN_IMPORTS = {
@@ -105,72 +108,217 @@ def kill_run_user():
 
 
 def run_limited(args, timeout, preexec, cwd=None, env=None):
-    p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=cwd,
-                         env=env, preexec_fn=preexec)
+    """Run a child with a wall-clock limit, keeping only the last LOG_KEEP
+    bytes of its combined stdout/stderr so a noisy child cannot exhaust
+    verifier memory. Returns (returncode or None on timeout, log tail)."""
+    p = subprocess.Popen(args, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+                         stderr=subprocess.STDOUT, cwd=cwd, env=env, preexec_fn=preexec,
+                         start_new_session=preexec is None)
+    tail = bytearray()
+    lock = threading.Lock()
+
+    def pump():
+        while True:
+            try:
+                chunk = p.stdout.read1(65536)
+            except (OSError, ValueError):
+                return
+            if not chunk:
+                return
+            with lock:
+                tail.extend(chunk)
+                if len(tail) > LOG_KEEP:
+                    del tail[:-LOG_KEEP]
+
+    reader = threading.Thread(target=pump, daemon=True)
+    reader.start()
+    timed_out = False
     try:
-        out, _ = p.communicate(timeout=timeout)
-        return p.returncode, out.decode(errors="replace")
+        p.wait(timeout=timeout)
     except subprocess.TimeoutExpired:
+        timed_out = True
         kill_group(p)
-        out, _ = p.communicate()
-        return None, out.decode(errors="replace")
+        p.wait()
+    # A descendant that escaped the process group may still hold the pipe;
+    # never wait on it indefinitely.
+    reader.join(5)
+    if reader.is_alive():
+        kill_group(p)
+        reader.join(5)
+    with lock:
+        log = bytes(tail).decode(errors="replace")
+    return (None if timed_out else p.returncode), log
+
+
+def read_output(path, expected_size, expected_sha):
+    """Hash a decoder output without following symlinks, without blocking on
+    FIFOs or devices, and without reading more than the expected size."""
+    try:
+        fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK | os.O_NOCTTY)
+    except OSError as e:
+        return False, f"no readable output ({e.strerror})"
+    try:
+        st = os.fstat(fd)
+        if not stat.S_ISREG(st.st_mode):
+            return False, "output is not a regular file"
+        if st.st_size != expected_size:
+            return False, f"output differs (size {st.st_size}, expected {expected_size})"
+        h = hashlib.sha256()
+        remaining = expected_size
+        while remaining > 0:
+            chunk = os.read(fd, min(1 << 20, remaining))
+            if not chunk:
+                break
+            h.update(chunk)
+            remaining -= len(chunk)
+        if remaining != 0 or os.read(fd, 1):
+            return False, "output changed size while being read"
+        if h.hexdigest() != expected_sha:
+            return False, "output differs (same size, different content)"
+        return True, "match"
+    finally:
+        os.close(fd)
 
 
 # ------------------------------------------------------------------ gates
-def check_tree(root):
-    """Source-tree gates: std-only Cargo package, no build scripts, no
-    linker configuration, no vendored ELF objects or C sources."""
-    for dirpath, dirnames, filenames in os.walk(root):
-        rel = os.path.relpath(dirpath, root)
-        if rel == ".cargo" or rel.startswith(".cargo" + os.sep):
-            return "a .cargo configuration directory is not allowed"
+TREE_LIMIT = 256 << 20
+SKIP_DIRS = {"target", ".git"}
+
+
+def copy_source(src, dst):
+    """Copy the package tree, skipping target/ and .git/ at any depth.
+    Returns an error string for symlinks, special files or an oversized
+    tree; never follows links and never reads past a file's own size."""
+    if os.path.islink(src):
+        return f"{src} is a symlink"
+    total = 0
+    for dirpath, dirnames, filenames in os.walk(src):
+        rel_dir = os.path.relpath(dirpath, src)
+        os.makedirs(os.path.join(dst, rel_dir), exist_ok=True)
+        for d in list(dirnames):
+            if d in SKIP_DIRS:
+                dirnames.remove(d)
+            elif os.path.islink(os.path.join(dirpath, d)):
+                return f"{os.path.normpath(os.path.join(rel_dir, d))} is a symlink"
         for fn in filenames:
             path = os.path.join(dirpath, fn)
-            if fn == "build.rs":
-                return f"build script {os.path.relpath(path, root)} is not allowed"
-            if fn.endswith((".c", ".h", ".cc", ".cpp", ".o", ".a", ".so")) or ".so." in fn:
-                return f"non-Rust object or source {os.path.relpath(path, root)} is not allowed"
+            rel = os.path.normpath(os.path.join(rel_dir, fn))
+            st = os.lstat(path)
+            if stat.S_ISLNK(st.st_mode):
+                return f"{rel} is a symlink"
+            if not stat.S_ISREG(st.st_mode):
+                return f"{rel} is not a regular file"
+            total += st.st_size
+            if total > TREE_LIMIT:
+                return "source tree exceeds 256 MiB"
+            fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
             try:
-                with open(path, "rb") as f:
-                    if f.read(4) == b"\x7fELF":
-                        return f"ELF file {os.path.relpath(path, root)} is not allowed"
-            except OSError:
-                pass
-            if fn == "Cargo.toml":
-                text = open(path, encoding="utf-8", errors="replace").read()
-                err = check_manifest(text)
-                if err:
-                    return f"{os.path.relpath(path, root)}: {err}"
+                with open(os.path.join(dst, rel), "wb") as out:
+                    remaining = st.st_size
+                    while remaining > 0:
+                        chunk = os.read(fd, min(1 << 20, remaining))
+                        if not chunk:
+                            break
+                        out.write(chunk)
+                        remaining -= len(chunk)
+            finally:
+                os.close(fd)
     return ""
 
 
-def check_manifest(text):
+def check_tree(root):
+    """Source-tree gates: std-only Cargo package, no build scripts, no
+    linker configuration, no vendored ELF objects or C sources."""
+    try:
+        return _check_tree(root)
+    except Exception as e:  # any surprise in the tree is the tree's fault
+        return f"source tree could not be checked ({type(e).__name__}: {str(e)[:160]})"
+
+
+def _check_tree(root):
+    for dirpath, dirnames, filenames in os.walk(root):
+        rel_dir = os.path.relpath(dirpath, root)
+        for d in dirnames:
+            if d == ".cargo":
+                return f"cargo configuration directory {os.path.normpath(os.path.join(rel_dir, d))} is not allowed"
+        for fn in filenames:
+            path = os.path.join(dirpath, fn)
+            rel = os.path.relpath(path, root)
+            if fn == "build.rs":
+                return f"build script {rel} is not allowed"
+            if fn.endswith((".c", ".h", ".cc", ".cpp", ".o", ".a", ".so")) or ".so." in fn:
+                return f"non-Rust object or source {rel} is not allowed"
+            st = os.lstat(path)
+            if not stat.S_ISREG(st.st_mode):
+                return f"{rel} is not a regular file"
+            fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+            try:
+                if os.read(fd, 4) == b"\x7fELF":
+                    return f"ELF file {rel} is not allowed"
+            finally:
+                os.close(fd)
+            if fn == "Cargo.toml":
+                if st.st_size > 1 << 20:
+                    return f"{rel}: manifest too large"
+                with open(path, "rb") as f:
+                    text = f.read().decode("utf-8", errors="replace")
+                err = check_manifest(text, dirpath, root)
+                if err:
+                    return f"{rel}: {err}"
+    return ""
+
+
+def _table(doc, key):
+    v = doc.get(key, {})
+    if not isinstance(v, dict):
+        raise ValueError(f"'{key}' must be a table")
+    return v
+
+
+def check_manifest(text, manifest_dir, root):
+    """Returns an error string, or "" when the manifest is acceptable.
+    Never raises: malformed or unsupported manifests are gate failures."""
     import tomllib
     try:
         doc = tomllib.loads(text)
-    except tomllib.TOMLDecodeError as e:
-        return f"unparsable manifest ({e})"
-    pkg = doc.get("package", {})
-    if "build" in pkg and pkg["build"] is not False:
-        return "package.build is not allowed"
-    if "links" in pkg:
-        return "package.links is not allowed"
-    lib = doc.get("lib", {})
-    if lib.get("proc-macro"):
-        return "proc-macro crates are not allowed"
-    tables = [doc.get("dependencies", {}), doc.get("build-dependencies", {}),
-              doc.get("dev-dependencies", {})]
-    for t in doc.get("target", {}).values():
-        tables += [t.get("dependencies", {}), t.get("build-dependencies", {})]
-    tables.append(doc.get("workspace", {}).get("dependencies", {}))
-    for t in tables:
-        for name, spec in t.items():
-            if not isinstance(spec, dict) or "path" not in spec:
-                return f"dependency '{name}' is not a path dependency inside the package"
-            if os.path.isabs(spec["path"]) or ".." in spec["path"].split("/"):
-                return f"dependency '{name}' points outside the package"
-    if "patch" in doc or "replace" in doc:
-        return "[patch]/[replace] is not allowed"
+    except (tomllib.TOMLDecodeError, ValueError) as e:
+        return f"unparsable manifest ({str(e)[:160]})"
+    try:
+        pkg = _table(doc, "package")
+        if "build" in pkg and pkg["build"] is not False:
+            return "package.build is not allowed"
+        if "links" in pkg:
+            return "package.links is not allowed"
+        lib = _table(doc, "lib")
+        if lib.get("proc-macro") or lib.get("proc_macro"):
+            return "proc-macro crates are not allowed"
+        if "patch" in doc or "replace" in doc:
+            return "[patch]/[replace] is not allowed"
+        tables = [_table(doc, "dependencies"), _table(doc, "build-dependencies"),
+                  _table(doc, "dev-dependencies"), _table(doc, "dev_dependencies"),
+                  _table(doc, "build_dependencies")]
+        for t in _table(doc, "target").values():
+            if not isinstance(t, dict):
+                raise ValueError("target entries must be tables")
+            tables += [_table(t, k) for k in ("dependencies", "build-dependencies",
+                                               "dev-dependencies", "dev_dependencies",
+                                               "build_dependencies")]
+        tables.append(_table(_table(doc, "workspace"), "dependencies"))
+        real_root = os.path.realpath(root)
+        for t in tables:
+            for name, spec in t.items():
+                if isinstance(spec, dict) and spec.get("workspace") is True \
+                        and not ({"git", "registry", "version", "path"} & set(spec)):
+                    continue  # resolved through [workspace.dependencies], checked as well
+                if not isinstance(spec, dict) or not isinstance(spec.get("path"), str):
+                    return f"dependency '{name}' is not a path dependency inside the package"
+                if {"git", "registry", "registry-index", "branch", "tag", "rev"} & set(spec):
+                    return f"dependency '{name}' names a non-path source"
+                target = os.path.realpath(os.path.join(manifest_dir, spec["path"]))
+                if target != real_root and not target.startswith(real_root + os.sep):
+                    return f"dependency '{name}' points outside the package"
+    except (ValueError, TypeError, AttributeError) as e:
+        return f"unsupported manifest structure ({str(e)[:160]})"
     return ""
 
 
@@ -225,17 +373,7 @@ def run_case(binary, case, case_dir, out_dir):
     elif rc != 0:
         ok, why = False, f"exit {rc}: {log.strip()[-120:]}"
     else:
-        try:
-            h = hashlib.sha256()
-            size = 0
-            with open(out_path, "rb") as f:
-                for chunk in iter(lambda: f.read(1 << 20), b""):
-                    h.update(chunk)
-                    size += len(chunk)
-            ok = h.hexdigest() == case["sha256"] and size == case["size"]
-            why = "match" if ok else f"output differs (size {size}, expected {case['size']})"
-        except OSError as e:
-            ok, why = False, f"no output: {e}"
+        ok, why = read_output(out_path, case["size"], case["sha256"])
     try:
         os.remove(out_path)
     except OSError:
@@ -261,17 +399,27 @@ def main():
         fail_gate("build", f"{SRC}/Cargo.toml not found")
         return
     try:
-        shutil.copytree(SRC, f"{WORK}/src", symlinks=False,
-                        ignore=shutil.ignore_patterns("target", ".git"),
-                        ignore_dangling_symlinks=True)
-    except (OSError, shutil.Error) as e:
-        fail_gate("source", f"could not copy {SRC}: {str(e)[:200]}")
+        err = copy_source(SRC, f"{WORK}/src")
+    except OSError as e:
+        err = f"could not copy {SRC}: {str(e)[:200]}"
+    if err:
+        fail_gate("source", err)
         return
     err = check_tree(f"{WORK}/src")
     if err:
         fail_gate("source", err)
         return
     ev["gates"]["source"] = 1
+
+    # Cargo also reads .cargo/config.toml from every ancestor of the build
+    # directory; move any planted there aside for the build.
+    displaced = []
+    for anc in ("/.cargo", "/tmp/.cargo"):
+        if os.path.lexists(anc):
+            aside = f"{anc}.displaced-{os.getpid()}"
+            os.rename(anc, aside)
+            displaced.append((aside, anc))
+    ev["displaced_cargo_config"] = [a for _, a in displaced]
 
     # Build unprivileged, offline, with a clean environment and a fresh cargo home.
     for d in ("cargo-home", "target", "home"):
@@ -285,9 +433,14 @@ def main():
     env = {"PATH": CLEAN_PATH, "HOME": f"{WORK}/home", "CARGO_HOME": f"{WORK}/cargo-home",
            "RUSTUP_HOME": "/usr/local/rustup", "CARGO_TARGET_DIR": f"{WORK}/target",
            "CARGO_NET_OFFLINE": "true", "LC_ALL": "C"}
-    rc, log = run_limited(["cargo", "build", "--release", "--offline", "--bin", "zstdr"],
-                          BUILD_TIMEOUT, drop_privileges_build, cwd=f"{WORK}/src", env=env)
-    kill_run_user()
+    try:
+        rc, log = run_limited(["cargo", "build", "--release", "--offline", "--bin", "zstdr"],
+                              BUILD_TIMEOUT, drop_privileges_build, cwd=f"{WORK}/src", env=env)
+    finally:
+        kill_run_user()
+        for aside, anc in displaced:
+            if not os.path.lexists(anc):
+                os.rename(aside, anc)
     ev["build_log_tail"] = log[-3000:]
     binary = f"{WORK}/target/release/zstdr"
     if rc != 0 or not os.path.isfile(binary):
@@ -326,6 +479,7 @@ def main():
         kill_run_user()
         for path, mode in hidden:
             os.chmod(path, mode)
+        ev["verifier_maxrss_kb"] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
 
 
 if __name__ == "__main__":
