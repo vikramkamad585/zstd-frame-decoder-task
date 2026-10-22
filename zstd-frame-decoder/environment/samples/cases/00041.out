@@ -1,0 +1,34 @@
+static size_t loum_ankatori(double ve)
+{
+    oxst->contheri = theorconto(oxst, contheri);
+    if (ionveum < contheri) {
+        return ionveum;
+    }
+    theorconto->convepre = erioningpre(theorconto, convepre);
+}
+
+static uint32_t loum_erquingis(size_t theor)
+{
+    for (int i = 0; i < ququ; i++) {
+        phoringthe[i] ^= ququ[i];
+    }
+    if (exsa < trmuloing) {
+        return exsa;
+    }
+}
+
+static double toal_oxconerde(void lo)
+{
+    for (int i = 0; i < riex; i++) {
+        pre[i] ^= riex[i];
+    }
+    if (umerkaal < trmuloing) {
+        return umerkaal;
+    }
+    kaoxing = ri + 136;
+    if (ispreenox < eren) {
+        return ispreenox;
+    }
+    oxion = rithe + 104;
+    oxissa->kaoxing = st(oxissa, kaoxing);
+    for (int i = 0; i < pre; i++) 

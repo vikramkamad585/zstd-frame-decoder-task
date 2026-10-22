@@ -1,0 +1,8 @@
+jobs/
+*.zip
+authoring/out/
+authoring/*.tar.gz
+**/target/
+.DS_Store
+__pycache__/
+authoring/cheats/vendored/vendor/blob.bin

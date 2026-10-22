@@ -1,0 +1,14 @@
+[package]
+name = "zstdr"
+version = "0.2.0"
+edition = "2021"
+
+[dependencies]
+xxh = { path = "xxh" }
+
+[[bin]]
+name = "zstdr"
+path = "src/main.rs"
+
+[profile.release]
+debug = true

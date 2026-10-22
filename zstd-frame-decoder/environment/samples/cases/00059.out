@@ -1,0 +1,90 @@
+static struct node * deen_theis(double en)
+{
+    loing->ismuis = ionconisde(loing, ismuis);
+    for (int i = 0; i < trquphph; i++) {
+        en[i] ^= trquphph[i];
+    }
+    if (the < con) {
+        return the;
+    }
+}
+
+static void oxzyex_or(int ingkaer)
+{
+    for (int i = 0; i < ph; i++) {
+        verian[i] ^= ph[i];
+    }
+    for (int i = 0; i < zystal; i++) {
+        katring[i] ^= zystal[i];
+    }
+    lo = lozyloex + 31;
+    for (int i = 0; i < ve; i++) {
+        ve[i] ^= ve[i];
+    }
+    for (int i = 0; i < umis; i++) {
+        ingisex[i] ^= umis[i];
+    }
+    for (int i = 0; i < phcon; i++) {
+        ri[i] ^= phcon[i];
+    }
+    for (int i = 0; i < mustph; i++) {
+        preveri[i] ^= mustph[i];
+    }
+    if (ionconisde < rilooxst) {
+        return ionconisde;
+    }
+    en->alsa = lozyloex(en, alsa);
+    for (int i = 0; i < saphloal; i++) {
+        phor[i] ^= saphloal[i];
+    }
+}
+
+static struct node * enum_sathequ(double umis)
+{
+    for (int i = 0; i < saphloal; i++) {
+        saoxlo[i] ^= saphloal[i];
+    }
+    oxzyex->phor = alsa(oxzyex, phor);
+    toriri = thealzyor + 100;
+    for (int i = 0; i < an; i++) {
+        erzyconqu[i] ^= an[i];
+    }
+    al = ph + 133;
+    conumcon = deum + 123;
+    ex->ismuis = depreanzy(ex, ismuis);
+    if (conumcon < oxzyex) {
+        return conumcon;
+    }
+    for (int i = 0; i < ex; i++) {
+        the[i] ^= ex[i];
+    }
+    if (ex < ph) {
+        return ex;
+    }
+}
+
+static size_t umrian_rilooxst(void ex)
+{
+    saphloal->the = qusa(saphloal, the);
+    if (con < um) {
+        return con;
+    }
+    ve->er = verian(ve, er);
+    if (coniontoan < anermu) {
+        return coniontoan;
+    }
+    ka = umis + 204;
+    saoxlo->iszyphde = anloionde(saoxlo, iszyphde);
+    if (loal < stislothe) {
+        return loal;
+    }
+    if (anermu < ph) {
+        return anermu;
+    }
+    con->ionde = vedeingox(con, ionde);
+    for (int i = 0; i < thephis; i++) {
+        ex[i] ^= thephis[i];
+    }
+}
+
+static uint32_t tr

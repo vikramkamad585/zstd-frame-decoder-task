@@ -1,0 +1,1150 @@
+{
+"cases": [
+{
+"id": "00000",
+"category": "levels",
+"dict": null,
+"expect": "ok",
+"note": "-1",
+"sha256": "f1aca398d6e729bd4cf47d739f815c524b80bca4ccd4d6e9736aeffd61f84f38",
+"size": 238
+},
+{
+"id": "00001",
+"category": "levels",
+"dict": null,
+"expect": "ok",
+"note": "-2",
+"sha256": "9d0d01f60ead3affea3c766910cef47e1fdcb2e7f44d22c0181880af5f78721c",
+"size": 14102
+},
+{
+"id": "00002",
+"category": "levels",
+"dict": null,
+"expect": "ok",
+"note": "-3",
+"sha256": "07b05ce59a12f21880c7cecae5c6880386694e820ae6cacc9a7a0d7aa1a0c290",
+"size": 25
+},
+{
+"id": "00003",
+"category": "levels",
+"dict": null,
+"expect": "ok",
+"note": "-4",
+"sha256": "fb188ebaf4cc2deec04fdaefeb94dfe05dfd35d1a7c5b6ad0f139c37114a6461",
+"size": 24459
+},
+{
+"id": "00004",
+"category": "levels",
+"dict": null,
+"expect": "ok",
+"note": "-5",
+"sha256": "fd1354d7247042408d248a6a16d4b40049bf4a0566fe9dd5f5ec4ab9e2a850a3",
+"size": 490535
+},
+{
+"id": "00005",
+"category": "levels",
+"dict": null,
+"expect": "ok",
+"note": "-6",
+"sha256": "cc3cb3e59f6e170e52b84f2f4fa6c830a1c4b7dcdc74cb3a291db9fb929acf0e",
+"size": 55619
+},
+{
+"id": "00006",
+"category": "levels",
+"dict": null,
+"expect": "ok",
+"note": "-7",
+"sha256": "68ff25bda321ef091026af5df828c0aea3269d1b132f06d2b0fe73faa30eb48f",
+"size": 98007
+},
+{
+"id": "00007",
+"category": "levels",
+"dict": null,
+"expect": "ok",
+"note": "-8",
+"sha256": "7b25be62513f3290cdd08628c1970e17883862310dfc6a3d675eb0ad1c2b4887",
+"size": 14320
+},
+{
+"id": "00008",
+"category": "levels",
+"dict": null,
+"expect": "ok",
+"note": "-9",
+"sha256": "906acdb2e9dd8c9f54451e1bc08039ecd8a15091b2f24590b8d6d7ab6523985a",
+"size": 56
+},
+{
+"id": "00009",
+"category": "levels",
+"dict": null,
+"expect": "ok",
+"note": "-10",
+"sha256": "b1a49b7b1d5f7830a95a3709b73ba0a788cec13d18a72a9f8615bf1cedc441f4",
+"size": 70
+},
+{
+"id": "00010",
+"category": "levels",
+"dict": null,
+"expect": "ok",
+"note": "-11",
+"sha256": "ded83483f38aa4967dbfbae909672ad69940cb8d9ca1e3fea8e5e8877b6001eb",
+"size": 23
+},
+{
+"id": "00011",
+"category": "levels",
+"dict": null,
+"expect": "ok",
+"note": "-12",
+"sha256": "e2f5e13c5052c821010bc9d5f21e397709391de210f6d354b72a65970206b233",
+"size": 7858
+},
+{
+"id": "00012",
+"category": "levels",
+"dict": null,
+"expect": "ok",
+"note": "-13",
+"sha256": "8ed27302fbd29425ee35c73d20fc340af6fba772c192f55381e724487e5b07fa",
+"size": 408
+},
+{
+"id": "00013",
+"category": "levels",
+"dict": null,
+"expect": "ok",
+"note": "-14",
+"sha256": "1f1a9d88fe14407d66ad95d9e92d42d10a5aace661f55f106b3ee333ac889d17",
+"size": 3224
+},
+{
+"id": "00014",
+"category": "levels",
+"dict": null,
+"expect": "ok",
+"note": "-15",
+"sha256": "cf2018a7606297886219fe849722ccf2885e3c55f0cfbeb5d9266fc183fb2753",
+"size": 209
+},
+{
+"id": "00015",
+"category": "levels",
+"dict": null,
+"expect": "ok",
+"note": "-16",
+"sha256": "b70c7081272dafba1ec8b76ce1f90cce1af39fa8a9b26dbde137a1f362b4a858",
+"size": 1354
+},
+{
+"id": "00016",
+"category": "levels",
+"dict": null,
+"expect": "ok",
+"note": "-17",
+"sha256": "46df46be5b1d64fbd985715d5a091159c83a0620bfcd2db0bdde40b7312212bf",
+"size": 8873
+},
+{
+"id": "00017",
+"category": "levels",
+"dict": null,
+"expect": "ok",
+"note": "-18",
+"sha256": "2a1c39f97f8843e31922f4f450cf7873095600fccd459ce5f0ae1e5d5797080e",
+"size": 591
+},
+{
+"id": "00018",
+"category": "levels",
+"dict": null,
+"expect": "ok",
+"note": "-19",
+"sha256": "064c88df988b553bfc37678c323f87da9c7d3c25a477ba47dd19b4284c001740",
+"size": 68
+},
+{
+"id": "00019",
+"category": "levels",
+"dict": null,
+"expect": "ok",
+"note": "--ultra -20",
+"sha256": "79e6168714b4faf3143de4e88110476aa8460a0de1a83d3a6c38e5fcfc0338ab",
+"size": 1750219
+},
+{
+"id": "00020",
+"category": "levels",
+"dict": null,
+"expect": "ok",
+"note": "--ultra -21",
+"sha256": "2292be312b9541c5477820ee730d1aeb736c6ee0e88b5c26f8769657b1c59f65",
+"size": 142386
+},
+{
+"id": "00021",
+"category": "levels",
+"dict": null,
+"expect": "ok",
+"note": "--ultra -22",
+"sha256": "6911ea2a41b07b70a42b0383ce5eb698c09023105d5c8c1e62abec35977e78dc",
+"size": 2555
+},
+{
+"id": "00022",
+"category": "fast",
+"dict": null,
+"expect": "ok",
+"note": "--fast=1",
+"sha256": "69cd48c16598a94d841cb2c5e8dca85b852c236b8564412358c38b1d519bf60f",
+"size": 35441
+},
+{
+"id": "00023",
+"category": "fast",
+"dict": null,
+"expect": "ok",
+"note": "--fast=2",
+"sha256": "5a36f6b609b36ae888514cdd5e6f8e1ef00533b8e4b7853f7075012d40788b70",
+"size": 2318
+},
+{
+"id": "00024",
+"category": "fast",
+"dict": null,
+"expect": "ok",
+"note": "--fast=3",
+"sha256": "937c237dbed19c3a114964f97b1cec6e09df617d60e4ad3a2fdf159e2f5586ed",
+"size": 47249
+},
+{
+"id": "00025",
+"category": "fast",
+"dict": null,
+"expect": "ok",
+"note": "--fast=4",
+"sha256": "d086b45ad3e01c71534032163b2866cef46c30f94ef504a5735e118c1c91b7f4",
+"size": 9446
+},
+{
+"id": "00026",
+"category": "fast",
+"dict": null,
+"expect": "ok",
+"note": "--fast=5",
+"sha256": "27d97e185568d6ba02b33ad7405f7cd5b826be6399013c9f8a0dffd6de15e649",
+"size": 213771
+},
+{
+"id": "00027",
+"category": "fast",
+"dict": null,
+"expect": "ok",
+"note": "--fast=6",
+"sha256": "fa09a9c045a2403c97c98aa8f8dc067b252f193314f54147effbc13fd73cb66a",
+"size": 15138
+},
+{
+"id": "00028",
+"category": "fast",
+"dict": null,
+"expect": "ok",
+"note": "--fast=7",
+"sha256": "56f2cbd970660c9b62ef7d96d06fb6a1814583b31c70c19a0f895b042a1d47a3",
+"size": 94
+},
+{
+"id": "00029",
+"category": "fast",
+"dict": null,
+"expect": "ok",
+"note": "--fast=10",
+"sha256": "352b130ce76135548a56373a8f5da892702504e4d849d27bd9a4aa228cfd368c",
+"size": 5157
+},
+{
+"id": "00030",
+"category": "fast",
+"dict": null,
+"expect": "ok",
+"note": "--fast=50",
+"sha256": "8119b6d95ce873d2b20e4f19e71189814487b206a871521d9d6141749283ed70",
+"size": 439
+},
+{
+"id": "00031",
+"category": "fast",
+"dict": null,
+"expect": "ok",
+"note": "--fast=200",
+"sha256": "410b637d6c553fcfdc3d87763f0d3848fb70ce084a94e9f3400e27ab70ed3744",
+"size": 4474
+},
+{
+"id": "00032",
+"category": "params",
+"dict": null,
+"expect": "ok",
+"note": "-19 --zstd=strategy=5,wlog=14,hlog=10,clog=12,slog=3,mml=7",
+"sha256": "c36d6558236d1ab05133059e3711b8df541d9597ee0454719100db4c49c44ef2",
+"size": 115
+},
+{
+"id": "00033",
+"category": "params",
+"dict": null,
+"expect": "ok",
+"note": "-5 --zstd=strategy=2,wlog=15,hlog=7,clog=12,slog=4,mml=7",
+"sha256": "31e90daa9bb108290652e19883708995391bae29a5e56f5eca8f9f8649df85d5",
+"size": 55
+},
+{
+"id": "00034",
+"category": "params",
+"dict": null,
+"expect": "ok",
+"note": "-7 --zstd=strategy=7,wlog=18,hlog=16,clog=17,slog=7,mml=3,tlen=11",
+"sha256": "06310f4aa0b2787d429ffe4c3c4a1be9ea86ef7a36ed287420c6bded6335d790",
+"size": 84
+},
+{
+"id": "00035",
+"category": "params",
+"dict": null,
+"expect": "ok",
+"note": "-9 --zstd=strategy=6,wlog=22,hlog=14,clog=7,slog=7,mml=6 --no-check",
+"sha256": "725e0e330e7fe3bd892a8d80f7668e11be9987a3b2467f616896263f28c1e4fe",
+"size": 32
+},
+{
+"id": "00036",
+"category": "params",
+"dict": null,
+"expect": "ok",
+"note": "-19 --zstd=strategy=9,wlog=10,hlog=7,clog=10,slog=2,mml=3,tlen=948 --no-check",
+"sha256": "6fba7c1abed0cc43fef79c8ac7e548cbe7317462bce4fad64987cb63955a4b79",
+"size": 12332
+},
+{
+"id": "00037",
+"category": "params",
+"dict": null,
+"expect": "ok",
+"note": "-7 --zstd=strategy=5,wlog=17,hlog=6,clog=17,slog=9,mml=5",
+"sha256": "cfb60c517edbf81ade4f02c414551dd460c83a25048aa1f057510abc1fac383c",
+"size": 133807
+},
+{
+"id": "00038",
+"category": "params",
+"dict": null,
+"expect": "ok",
+"note": "-9 --zstd=strategy=7,wlog=21,hlog=12,clog=7,slog=5,mml=6,tlen=642",
+"sha256": "926a39a13ae17dfe313eceb6ecbd16ec9d7aac4361b98035f594caa63df29cad",
+"size": 494
+},
+{
+"id": "00039",
+"category": "params",
+"dict": null,
+"expect": "ok",
+"note": "-17 --zstd=strategy=1,wlog=13,hlog=14,clog=8,slog=8,mml=6",
+"sha256": "451d842e04c049ddf8a86f1fabf30f7c3f8fdeb9e5f5ddfa70a1dc173e855ff4",
+"size": 2989
+},
+{
+"id": "00040",
+"category": "params",
+"dict": null,
+"expect": "ok",
+"note": "-18 --zstd=strategy=5,wlog=13,hlog=14,clog=12,slog=8,mml=6",
+"sha256": "2407b719595cd992b63174dfb9112090caa1b1896e00cc2a640acb4012332bc3",
+"size": 3450
+},
+{
+"id": "00041",
+"category": "params",
+"dict": null,
+"expect": "ok",
+"note": "-12 --zstd=strategy=3,wlog=20,hlog=14,clog=15,slog=7,mml=5",
+"sha256": "df6c78f5fa594090c7d4bb220394634ca67cb34c9a6d9d232a93083707e1fa6a",
+"size": 756
+},
+{
+"id": "00042",
+"category": "params",
+"dict": null,
+"expect": "ok",
+"note": "-6 --zstd=strategy=6,wlog=19,hlog=19,clog=11,slog=6,mml=4",
+"sha256": "e823a78e8802fc5d44da54beca0059c8fd4c221fb8d23c32bfa8ee59efeab4a8",
+"size": 1255
+},
+{
+"id": "00043",
+"category": "params",
+"dict": null,
+"expect": "ok",
+"note": "-5 --zstd=strategy=2,wlog=22,hlog=21,clog=7,slog=9,mml=6",
+"sha256": "ffbca68f9e0a7259e424d3f0f41da5d27499cefb9772e5795e726b2493cb3f0c",
+"size": 65943
+},
+{
+"id": "00044",
+"category": "params",
+"dict": null,
+"expect": "ok",
+"note": "-5 --zstd=strategy=6,wlog=15,hlog=9,clog=14,slog=8,mml=3",
+"sha256": "119b82b7038557fadcc051a535ea45cbe2323a728155dead6c7c8de2490c4122",
+"size": 5459
+},
+{
+"id": "00045",
+"category": "params",
+"dict": null,
+"expect": "ok",
+"note": "-17 --zstd=strategy=5,wlog=17,hlog=14,clog=16,slog=6,mml=7 --no-check",
+"sha256": "8d5b875dc59a81ac8518c70edc6658c00d97878e86febd56521e285729e6cfd5",
+"size": 88989
+},
+{
+"id": "00046",
+"category": "long",
+"dict": null,
+"expect": "ok",
+"note": "stdin --long=25",
+"sha256": "6af172339bb2c247699f301b757c59e18b3fd8d2bd5b68ea4ef978a5f304a639",
+"size": 6720
+},
+{
+"id": "00047",
+"category": "long",
+"dict": null,
+"expect": "ok",
+"note": "stdin wlog=24",
+"sha256": "ecd1be0eb4e98d8f0fa39e8f88d2ea5386f09dc9f57a120d6ee24c986e9e6b8c",
+"size": 144767
+},
+{
+"id": "00048",
+"category": "dict",
+"dict": "t1.dict",
+"expect": "ok",
+"note": "-18 -D t1.dict",
+"sha256": "53776383958bc834512f9425acf7414b8f8b5c887120f00d480500fe5b741220",
+"size": 3930
+},
+{
+"id": "00049",
+"category": "dict",
+"dict": "t1.dict",
+"expect": "ok",
+"note": "-4 -D t1.dict",
+"sha256": "f3e4a6017dff8b1e881103d4d7f8d560f7398ff9a49a483fb3248e005f4b540d",
+"size": 8132
+},
+{
+"id": "00050",
+"category": "dict",
+"dict": "t0.dict",
+"expect": "ok",
+"note": "-4 -D t0.dict",
+"sha256": "92f57360b5573aeb5f0b1b3bc21a4e04e67e8eba6d372c9b0b0947865644440f",
+"size": 37807
+},
+{
+"id": "00051",
+"category": "dict",
+"dict": "t1.dict",
+"expect": "ok",
+"note": "-5 -D t1.dict",
+"sha256": "9da3e3e91b88c6ae57fd40395c91128b3d23c4286dc15a1112cefccde32b5518",
+"size": 47609
+},
+{
+"id": "00052",
+"category": "dict",
+"dict": "t1.dict",
+"expect": "ok",
+"note": "-10 -D t1.dict",
+"sha256": "b42c1bf0614e11f9df92aaae547b91ee244845398fe05144e71649ea6712a7a5",
+"size": 157522
+},
+{
+"id": "00053",
+"category": "dict",
+"dict": "t4.dict",
+"expect": "ok",
+"note": "-2 -D t4.dict",
+"sha256": "c9bd3dbb2b3919a7507420871aebb9fbb700d323f5b8cdcb944aafe2d7b77dec",
+"size": 114
+},
+{
+"id": "00054",
+"category": "dict",
+"dict": "t4.dict",
+"expect": "ok",
+"note": "-1 -D t4.dict --no-dictID",
+"sha256": "86972d2d9f69344824a65806c568926f16b474786e355a54d75d67854b1f874a",
+"size": 122
+},
+{
+"id": "00055",
+"category": "dict",
+"dict": "t1.dict",
+"expect": "ok",
+"note": "-18 -D t1.dict",
+"sha256": "d85e424789954c69a54068fb8250c8c8b3cd6c3094b0a29c24e2b669a71f9f14",
+"size": 794
+},
+{
+"id": "00056",
+"category": "dict",
+"dict": "t0.dict",
+"expect": "ok",
+"note": "-10 -D t0.dict",
+"sha256": "2c5b8fe482f62f39c2131b83338e3aacc58f95101be6bb593fe9301df47ede20",
+"size": 193
+},
+{
+"id": "00057",
+"category": "dict",
+"dict": "t3.dict",
+"expect": "ok",
+"note": "-12 -D t3.dict",
+"sha256": "347e502f9f101a7737791d117f736817bdd7c4f36eed0491b0172d6caa7ecbb0",
+"size": 7011
+},
+{
+"id": "00058",
+"category": "dict",
+"dict": "t4.dict",
+"expect": "ok",
+"note": "-15 -D t4.dict",
+"sha256": "580b8f0fc482785ecf68065c9c9cf501e7270d695149f5fb2d95f664ea2f19e4",
+"size": 1897
+},
+{
+"id": "00059",
+"category": "dict",
+"dict": "t0.dict",
+"expect": "ok",
+"note": "-14 -D t0.dict",
+"sha256": "12689e75633bccf3558f8e74438016d3529303f150cde9aaff4ea8c6776f6160",
+"size": 1965
+},
+{
+"id": "00060",
+"category": "dict",
+"dict": "t0.dict",
+"expect": "ok",
+"note": "-7 -D t0.dict",
+"sha256": "67680c45f79677c7da706c4b4620638094d6bca786db7658eab33f6cec31a3ab",
+"size": 2235
+},
+{
+"id": "00061",
+"category": "dict",
+"dict": "t2.dict",
+"expect": "ok",
+"note": "-12 -D t2.dict",
+"sha256": "1db43d9f5755a0ae4ab242b1c523634c4a4e12d214798fa6567940f9244cdc5b",
+"size": 3023
+},
+{
+"id": "00062",
+"category": "rawdict",
+"dict": "raw0.bin",
+"expect": "ok",
+"note": "--patch-from=raw0.bin -11",
+"sha256": "faa9e41f610c50aca0ca676a2b4d981c88f4fa712232032e4aa34fd90c466a77",
+"size": 124810
+},
+{
+"id": "00063",
+"category": "rawdict",
+"dict": "raw1.bin",
+"expect": "ok",
+"note": "--patch-from=raw1.bin -13",
+"sha256": "ef251dfd40545ba83470f6e65960d45f471e19a958a31a7a2cd6bfcecffd9a10",
+"size": 56831
+},
+{
+"id": "00064",
+"category": "rawdict",
+"dict": "raw2.bin",
+"expect": "ok",
+"note": "-D raw2.bin -10",
+"sha256": "692e3bb543cbdfc3a7a80cb1b09653c92dfcd2909e23fa3e5d16367d5efc4b2b",
+"size": 383
+},
+{
+"id": "00065",
+"category": "rawdict",
+"dict": "raw3.bin",
+"expect": "ok",
+"note": "--patch-from=raw3.bin -10",
+"sha256": "fe28948454b0b539565b9c7c022d15b29d1096530e87b346db5a55be02598b07",
+"size": 14801
+},
+{
+"id": "00066",
+"category": "rawdict",
+"dict": "raw4.bin",
+"expect": "ok",
+"note": "-D raw4.bin -10",
+"sha256": "5323cf1931f7f7481641f046c2cb908bde862acf64eddd8875ba5a3b06b1a930",
+"size": 12494
+},
+{
+"id": "00067",
+"category": "multiframe",
+"dict": null,
+"expect": "ok",
+"note": "5 parts",
+"sha256": "49d2c65015d5d7281863e1362c841e1cc97d7de54423990a46b37644c292c470",
+"size": 28520
+},
+{
+"id": "00068",
+"category": "multiframe",
+"dict": null,
+"expect": "ok",
+"note": "1 parts",
+"sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+"size": 0
+},
+{
+"id": "00069",
+"category": "multiframe",
+"dict": null,
+"expect": "ok",
+"note": "6 parts",
+"sha256": "6be580204985d192b9dc6c8423c08f327c91afe8a023576b3a28fc807a71db89",
+"size": 13930
+},
+{
+"id": "00070",
+"category": "multiframe",
+"dict": null,
+"expect": "ok",
+"note": "2 parts",
+"sha256": "284bc373b86c3c5bf379c90810d04a2bc059503c85cc9c63ba6a821efb77580f",
+"size": 119110
+},
+{
+"id": "00071",
+"category": "multiframe",
+"dict": null,
+"expect": "ok",
+"note": "3 parts",
+"sha256": "211c7d4c43173767f7e0d3cf987866a82739cc344ed6ca69e7014af25a449503",
+"size": 38
+},
+{
+"id": "00072",
+"category": "multiframe",
+"dict": null,
+"expect": "ok",
+"note": "3 parts",
+"sha256": "52abe70cc846c1db022ab4bd3157307aa7cd00ea1cb8528b52fd6f905b7cb031",
+"size": 3641
+},
+{
+"id": "00073",
+"category": "multiframe",
+"dict": null,
+"expect": "ok",
+"note": "6 parts",
+"sha256": "d26b4af4ffae1f2c0c1b5a5a1f60f30e03567a8d8f93f15e1a82ffedf30f4bd3",
+"size": 225574
+},
+{
+"id": "00074",
+"category": "multiframe",
+"dict": null,
+"expect": "ok",
+"note": "3 parts",
+"sha256": "2533c536d7caee3ad3fde5f1cf05f8c9e539db4a071c5e602f49473abeb684c6",
+"size": 57557
+},
+{
+"id": "00075",
+"category": "stream",
+"dict": null,
+"expect": "ok",
+"note": "stdin -16 --no-content-size",
+"sha256": "48ff4e108ef2f9cc04ad87c9bc721e8b358b5546ac18417098d44cdf37f885bc",
+"size": 708001
+},
+{
+"id": "00076",
+"category": "stream",
+"dict": null,
+"expect": "ok",
+"note": "stdin -6 --no-check",
+"sha256": "937b827bd43258c3832d2605fca30d16dcdf0303037316f48071909901902fd6",
+"size": 1276227
+},
+{
+"id": "00077",
+"category": "stream",
+"dict": null,
+"expect": "ok",
+"note": "stdin -18 --rsyncable -T2",
+"sha256": "8a31b7af3b67fc417ef91ae0f3f6c2f930c6ac754427efc05e1bf70980b998b0",
+"size": 52773
+},
+{
+"id": "00078",
+"category": "stream",
+"dict": null,
+"expect": "ok",
+"note": "stdin -18 -B65536 -T2",
+"sha256": "bed6679cc2a6f40f50c55ca2190da57c235f81f3f06b8cefbce36c96e19fc311",
+"size": 27
+},
+{
+"id": "00079",
+"category": "stream",
+"dict": null,
+"expect": "ok",
+"note": "stdin -10 -T4",
+"sha256": "656c67a8e2044d9953ecc9736921055d70969736e7eb80188821cb5f44c5dbe2",
+"size": 726
+},
+{
+"id": "00080",
+"category": "stream",
+"dict": null,
+"expect": "ok",
+"note": "-17 --no-check",
+"sha256": "756e61ab9622c9852b9466ba5261ec1c8fe13486bae6abccd6391a4f3f266138",
+"size": 6175
+},
+{
+"id": "00081",
+"category": "stream",
+"dict": null,
+"expect": "ok",
+"note": "stdin -17 --no-check",
+"sha256": "9242039c7e0d62a4af7ef7aac0d880b98a06d829e17f608ceaef20afd3d2cb8a",
+"size": 4385
+},
+{
+"id": "00082",
+"category": "stream",
+"dict": null,
+"expect": "ok",
+"note": "stdin -17 --target-compressed-block-size=1024",
+"sha256": "0b5dc785e1c3fba462e2771f0008fffcbd5563237903232859b4fbf22f2c4b21",
+"size": 139
+},
+{
+"id": "00083",
+"category": "stream",
+"dict": null,
+"expect": "ok",
+"note": "stdin -17 --stream-size=350",
+"sha256": "45633a8b3916265a90e639a5955054c0aeffe1d8aef6825de39efe99aec393d9",
+"size": 350
+},
+{
+"id": "00084",
+"category": "stream",
+"dict": null,
+"expect": "ok",
+"note": "-8 --target-compressed-block-size=1024",
+"sha256": "2e918fefdd90c0e59ac74e2e3ce612552f8c037da1f4eebfa36cfbb0dc7f7a02",
+"size": 9354
+},
+{
+"id": "00085",
+"category": "edge",
+"dict": null,
+"expect": "ok",
+"note": "size=0 -8",
+"sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+"size": 0
+},
+{
+"id": "00086",
+"category": "edge",
+"dict": null,
+"expect": "ok",
+"note": "size=1 -3",
+"sha256": "c19a797fa1fd590cd2e5b42d1cf5f246e29b91684e2f87404b81dc345c7a56a0",
+"size": 1
+},
+{
+"id": "00087",
+"category": "edge",
+"dict": null,
+"expect": "ok",
+"note": "size=2 -18 --no-check",
+"sha256": "6017dbca8e3eeb2f73be4123b0032c736d8c8f9bf8c86e6631887342c06fec90",
+"size": 2
+},
+{
+"id": "00088",
+"category": "edge",
+"dict": null,
+"expect": "ok",
+"note": "size=3 -18",
+"sha256": "c6841cd9c02e5620c7fa7fdcf48d0e886b59a761133c45cded31f83954d0c06f",
+"size": 3
+},
+{
+"id": "00089",
+"category": "edge",
+"dict": null,
+"expect": "ok",
+"note": "size=7 -13 --no-check",
+"sha256": "1c2cab23f7fd5f431812a6adbb51e46874e82aa728ebc29bbf245bdd46ed8269",
+"size": 7
+},
+{
+"id": "00090",
+"category": "edge",
+"dict": null,
+"expect": "ok",
+"note": "size=127 -15 --no-check",
+"sha256": "5911403c3bfd026bac5ef7594294e215d7ee3b1a3b6a9a5ce7125c1d8fcbe569",
+"size": 127
+},
+{
+"id": "00091",
+"category": "edge",
+"dict": null,
+"expect": "ok",
+"note": "size=255 -11 --no-check",
+"sha256": "f6e2e5f8b8882a36ed71f89ec1fac44ea82b9b9938cc8ece31136249f8b4ae68",
+"size": 255
+},
+{
+"id": "00092",
+"category": "edge",
+"dict": null,
+"expect": "ok",
+"note": "size=256 -13 --no-check",
+"sha256": "59cb0be671b19b1ee0fa8b3188bab068c51a23c0c70ad97923e971375b93a2a6",
+"size": 256
+},
+{
+"id": "00093",
+"category": "edge",
+"dict": null,
+"expect": "ok",
+"note": "size=257 -4",
+"sha256": "ef642925a5bf3aa37d5b3d77db2b473f519b06b985192c0296f998b76e914434",
+"size": 257
+},
+{
+"id": "00094",
+"category": "edge",
+"dict": null,
+"expect": "ok",
+"note": "size=1023 -18",
+"sha256": "03f56c702dcabdce2b5593cc4088f4450e29eb7dc025306fb52dbe6b05e4bd7c",
+"size": 1023
+},
+{
+"id": "00095",
+"category": "edge",
+"dict": null,
+"expect": "ok",
+"note": "size=1024 -9",
+"sha256": "dcd9db1c0f27a3e25185b65ce2c3110461cef096273242c2da6da0efb463a846",
+"size": 1024
+},
+{
+"id": "00096",
+"category": "edge",
+"dict": null,
+"expect": "ok",
+"note": "size=65535 -14",
+"sha256": "e8324141ac87c87f9009d3bc5a2abb0a8362d1bc81eb60c350c17d7a9beb8551",
+"size": 65535
+},
+{
+"id": "00097",
+"category": "edge",
+"dict": null,
+"expect": "ok",
+"note": "size=65791 -1 --no-check",
+"sha256": "d5bbfa3f907ef03cd1dca31088e7e81d3faddcd057b2756aeca84a248f5a029a",
+"size": 65791
+},
+{
+"id": "00098",
+"category": "edge",
+"dict": null,
+"expect": "ok",
+"note": "size=65792 -10",
+"sha256": "78fba9d2da1c1214f5710637c575cec6aeb3b65895486ce0d16f1156517efd12",
+"size": 65792
+},
+{
+"id": "00099",
+"category": "edge",
+"dict": null,
+"expect": "ok",
+"note": "size=131071 -13 --no-check",
+"sha256": "ed232dcd351da054009542d28b5e8b6773c2f3a48bd0ab65740cb09b41c5dfe8",
+"size": 131071
+},
+{
+"id": "00100",
+"category": "edge",
+"dict": null,
+"expect": "ok",
+"note": "size=131072 -14 --no-check",
+"sha256": "1f320243041fd9575bb35d70d1b2df0d8102043b54e5c2094672fd5df72f077a",
+"size": 131072
+},
+{
+"id": "00101",
+"category": "edge",
+"dict": null,
+"expect": "ok",
+"note": "size=131073 -19",
+"sha256": "2e84b939a43dc63ac355088c28144379c4f1b8e9883dc4d00aba3b3c6ae9b93b",
+"size": 131073
+},
+{
+"id": "00102",
+"category": "edge",
+"dict": null,
+"expect": "ok",
+"note": "size=262143 -3",
+"sha256": "64b75b6344cfec575b080bd2f0f08309b4195618112aa709030b1b2ea2f50877",
+"size": 262143
+},
+{
+"id": "00103",
+"category": "edge",
+"dict": null,
+"expect": "ok",
+"note": "size=262144 -11",
+"sha256": "34540ae3560f04bbf6ffc9b20f986c034368e2a213275ba04e43e3bdc184e039",
+"size": 262144
+},
+{
+"id": "00104",
+"category": "edge",
+"dict": null,
+"expect": "ok",
+"note": "size=393217 -10 --no-check",
+"sha256": "833f76f743f63ea578bcf36b772fc3229610713e66051c9995dc2651c83d05fa",
+"size": 393217
+},
+{
+"id": "00105",
+"category": "edge",
+"dict": null,
+"expect": "ok",
+"note": "hand-built raw/RLE frame",
+"sha256": "6589c1c7329ac03a7def6bdfb992b6c0766bc6c230428e95a375a8d23c54b680",
+"size": 3
+},
+{
+"id": "00106",
+"category": "edge",
+"dict": null,
+"expect": "ok",
+"note": "hand-built raw/RLE frame",
+"sha256": "21acdd529ecf4cc9e55ddeea44fc8c67d8ec14d308d1f9f27e27864eee107095",
+"size": 24402
+},
+{
+"id": "00107",
+"category": "edge",
+"dict": null,
+"expect": "ok",
+"note": "hand-built raw/RLE frame",
+"sha256": "054a89877d835a1a029823bb836773928b4b177d5c83cfbbff612c6238dd3aa3",
+"size": 56
+},
+{
+"id": "00108",
+"category": "edge",
+"dict": null,
+"expect": "ok",
+"note": "hand-built raw/RLE frame",
+"sha256": "1a451e6603fc129dcc1d19ffb7002f7fe681f90d887712cae7df55d021d1bfd3",
+"size": 21588
+},
+{
+"id": "00109",
+"category": "edge",
+"dict": null,
+"expect": "ok",
+"note": "unused header bit set",
+"sha256": "d20ed7176493862edbbc78dc8bc0fa6ed9001cf71d18fbba532aeb739d1f9337",
+"size": 1744
+},
+{
+"id": "00110",
+"category": "edge",
+"dict": null,
+"expect": "ok",
+"note": "8-byte FCS field",
+"sha256": "c53c864db0d4ecd75b9283ccdc68fee02a463b478106b145b47dd0453f8ea959",
+"size": 284
+},
+{
+"id": "00111",
+"category": "errors",
+"dict": null,
+"expect": "error",
+"note": "truncated at 2/812"
+},
+{
+"id": "00112",
+"category": "errors",
+"dict": null,
+"expect": "error",
+"note": "truncated at 19133/19289"
+},
+{
+"id": "00113",
+"category": "errors",
+"dict": null,
+"expect": "error",
+"note": "truncated at 102/341"
+},
+{
+"id": "00114",
+"category": "errors",
+"dict": null,
+"expect": "error",
+"note": "truncated at 1386/2722"
+},
+{
+"id": "00115",
+"category": "errors",
+"dict": null,
+"expect": "error",
+"note": "truncated at 2790/8744"
+},
+{
+"id": "00116",
+"category": "errors",
+"dict": null,
+"expect": "error",
+"note": "truncated at 66/221"
+},
+{
+"id": "00117",
+"category": "errors",
+"dict": null,
+"expect": "error",
+"note": "bit flip at 878 -> checksum mismatch"
+},
+{
+"id": "00118",
+"category": "errors",
+"dict": null,
+"expect": "error",
+"note": "bit flip at 448 -> checksum mismatch"
+},
+{
+"id": "00119",
+"category": "errors",
+"dict": null,
+"expect": "error",
+"note": "bit flip at 10862 -> checksum mismatch"
+},
+{
+"id": "00120",
+"category": "errors",
+"dict": null,
+"expect": "error",
+"note": "bit flip at 374 -> checksum mismatch"
+},
+{
+"id": "00121",
+"category": "errors",
+"dict": null,
+"expect": "error",
+"note": "reserved header bit set"
+},
+{
+"id": "00122",
+"category": "errors",
+"dict": null,
+"expect": "error",
+"note": "reserved block type"
+},
+{
+"id": "00123",
+"category": "errors",
+"dict": null,
+"expect": "error",
+"note": "bad magic"
+},
+{
+"id": "00124",
+"category": "errors",
+"dict": null,
+"expect": "error",
+"note": "trailing garbage"
+},
+{
+"id": "00125",
+"category": "errors",
+"dict": null,
+"expect": "error",
+"note": "window 2^28"
+},
+{
+"id": "00126",
+"category": "errors",
+"dict": null,
+"expect": "error",
+"note": "window 2^29"
+},
+{
+"id": "00127",
+"category": "errors",
+"dict": null,
+"expect": "error",
+"note": "window 2^30"
+},
+{
+"id": "00128",
+"category": "errors",
+"dict": null,
+"expect": "error",
+"note": "window 2^31"
+},
+{
+"id": "00129",
+"category": "errors",
+"dict": null,
+"expect": "error",
+"note": "content size off by 1"
+},
+{
+"id": "00130",
+"category": "errors",
+"dict": null,
+"expect": "error",
+"note": "dictionary required but not given"
+},
+{
+"id": "00131",
+"category": "errors",
+"dict": "t3.dict",
+"expect": "error",
+"note": "compressed with t0.dict, given t3.dict"
+}
+]
+}

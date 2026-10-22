@@ -1,0 +1,5 @@
+{"ts": 1700277408451, "level": "ERROR", "svc": "gateway", "msg": "token refreshed", "latency_ms": 44.73, "req": "c7f3b01e9fbeeb92", "code": 200}
+{"ts": 1700277408941, "level": "INFO", "svc": "billing", "msg": "retrying upstream", "latency_ms": 91.68, "req": "c96c4339f4a1c2e1", "code": 404}
+{"ts": 1700277410922, "level": "INFO", "svc": "scheduler", "msg": "token refreshed", "latency_ms": 28.45, "req": "8aa40af2e6a739a8", "code": 500}
+{"ts": 1700277412784, "level": "WARN", "svc": "gateway", "msg": "flush complete", "latency_ms": 3.95, "req": "6c7a007013b19fe5", "code": 404}
+{"ts": 17002
